@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LatexTailor | Generador de Patrones 1:1 e Interactivo 3D</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- CSS Estilos -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- CABECERA -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-shiny"></span>
+                <span class="logo-text">LATEX<span class="highlight">TAILOR</span></span>
+            </div>
+            <div class="tagline">Diseñador Profesional de Látex • Patrones 1:1 y Maniquí Virtual 360°</div>
+            <div class="header-badges">
+                <span class="badge badge-premium">INTERACTIVE 3D</span>
+                <span class="badge badge-version">v2.0.0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="main-container">
+        
+        <!-- SECCIÓN DE TRABAJO EN TRES COLUMNAS -->
+        <section class="workspace-grid">
+            
+            <!-- PANEL 1: CONFIGURACIÓN GENERAL Y PRENDAS -->
+            <aside class="left-sidebar glass">
+                <div class="panel-header">
+                    <h3><span class="icon">⚙️</span> Configuración</h3>
+                </div>
+                <div class="panel-content scrollable">
+                    <!-- 1. Tipo de Prenda -->
+                    <div class="control-group">
+                        <label class="group-title">1. Tipo de Prenda</label>
+                        <div class="garment-grid">
+                            <button class="garment-btn active" data-garment="body">
+                                <span class="btn-icon">🩱</span>
+                                <span class="btn-label">Body / Bodysuit</span>
+                            </button>
+                            <button class="garment-btn" data-garment="catsuit">
+                                <span class="btn-icon">🕴️</span>
+                                <span class="btn-label">Catsuit</span>
+                            </button>
+                            <button class="garment-btn" data-garment="mask">
+                                <span class="btn-icon">🎭</span>
+                                <span class="btn-label">Máscara</span>
+                            </button>
+                            <button class="garment-btn" data-garment="gloves">
+                                <span class="btn-icon">🧤</span>
+                                <span class="btn-label">Guantes</span>
+                            </button>
+                            <button class="garment-btn" data-garment="sosten">
+                                <span class="btn-icon">👙</span>
+                                <span class="btn-label">Sostén / Bra</span>
+                            </button>
+                            <button class="garment-btn" data-garment="colaless">
+                                <span class="btn-icon">🩲</span>
+                                <span class="btn-label">Colaless</span>
+                            </button>
+                            <button class="garment-btn" data-garment="boxer">
+                                <span class="btn-icon">🩳</span>
+                                <span class="btn-label">Boxer / Culotte</span>
+                            </button>
+                            <button class="garment-btn" data-garment="stockings">
+                                <span class="btn-icon">👣</span>
+                                <span class="btn-label">Medias</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Anatomía de Referencia y Talla -->
+                    <div class="control-group">
+                        <label class="group-title">2. Anatomía y Tallas</label>
+                        <div class="toggle-container">
+                            <span class="toggle-label">Silueta:</span>
+                            <div class="toggle-buttons">
+                                <button class="toggle-btn active" id="gender-female" data-gender="female">Mujer</button>
+                                <button class="toggle-btn" id="gender-male" data-gender="male">Hombre</button>
+                            </div>
+                        </div>
+                        <div class="select-wrapper">
+                            <label for="size-preset">Talla Base de Referencia:</label>
+                            <select id="size-preset">
+                                <option value="manual">— Personalizada / Manual —</option>
+                                <option value="xs">Talla XS (Extra Pequeña)</option>
+                                <option value="s">Talla S (Pequeña)</option>
+                                <option value="m" selected>Talla M (Mediana)</option>
+                                <option value="l">Talla L (Grande)</option>
+                                <option value="xl">Talla XL (Extra Grande)</option>
+                                <option value="xxl">Talla XXL (Doble Extra Grande)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 3. Propiedades del Látex -->
+                    <div class="control-group bg-dark-card">
+                        <label class="group-title text-pink">💧 Parámetros del Látex</label>
+                        <div class="range-wrapper">
+                            <div class="range-header">
+                                <span>Grosor:</span>
+                                <span id="thickness-val" class="highlight-val">0.40 mm</span>
+                            </div>
+                            <input type="range" id="latex-thickness" min="0.20" max="1.00" step="0.05" value="0.40">
+                        </div>
+                        <div class="select-wrapper mt-2">
+                            <label for="tension-level">Ajuste (Estiramiento):</label>
+                            <select id="tension-level">
+                                <option value="comfort">Confortable (-4%)</option>
+                                <option value="tight" selected>Ajustado Estándar (-8%)</option>
+                                <option value="secondskin">Segunda Piel (-12%)</option>
+                            </select>
+                        </div>
+                        <div class="range-wrapper mt-2">
+                            <div class="range-header">
+                                <span>Solape de Costura:</span>
+                                <span id="seam-val" class="highlight-val">8 mm</span>
+                            </div>
+                            <input type="range" id="seam-allowance" min="4" max="12" step="1" value="8">
+                        </div>
+                        <div class="reduction-summary">
+                            <span>Reducción Total:</span>
+                            <span id="reduction-total-badge" class="badge badge-reduction">-8.0%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- PANEL 2: FICHA ANTROPOMÉTRICA DE 28 MEDIDAS E INTERACTIVIDAD DE CUERPO -->
+            <section class="measures-panel glass">
+                <div class="panel-header">
+                    <h3><span class="icon">📋</span> Ficha de Medidas (28 Puntos)</h3>
+                </div>
+                <div class="panel-content scrollable">
+                    
+                    <!-- Diagrama interactivo del cuerpo humano -->
+                    <div class="body-diagram-container">
+                        <span class="diagram-tag">Diagrama Interactivo (Pasa el cursor o haz clic)</span>
+                        <div class="body-diagram-svg" id="interactive-body-svg-container">
+                            <!-- El SVG del cuerpo interactivo se inyectará aquí -->
+                        </div>
+                    </div>
+
+                    <!-- Tabla de llenado rápido de medidas -->
+                    <div class="table-container">
+                        <table class="measures-table">
+                            <thead>
+                                <tr>
+                                    <th width="8%">NO.</th>
+                                    <th width="62%">Medida Corporal</th>
+                                    <th width="30%">Valor (cm)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="measures-table-body">
+                                <!-- Filas de la 1 a la 28 inyectadas dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- PANEL 3: VISOR DUAL (PATRÓN Plano 2D VS SIMULADOR 3D 360°) -->
+            <section class="display-panel glass">
+                <div class="panel-header">
+                    <div class="view-tabs">
+                        <button class="view-tab active" data-view="pattern">📐 Patrón Plano (CAD)</button>
+                        <button class="view-tab" data-view="3d-sim">👥 Maniquí Virtual 360°</button>
+                    </div>
+                    <div class="viewer-actions" id="pattern-actions">
+                        <button class="action-btn" id="btn-reset-view">🎯 Centrar</button>
+                        <button class="action-btn" id="btn-toggle-grid">🏁 Red</button>
+                        <button class="action-btn highlight-btn" id="btn-export">📥 SVG 1:1</button>
+                    </div>
+                    <div class="viewer-actions hidden" id="sim-3d-actions">
+                        <div class="toggle-buttons mini-toggle" style="margin-right: 0.5rem;">
+                            <button class="toggle-btn active" id="sim-mode-vector" data-mode="vector" style="padding: 0.2rem 0.6rem; font-size: 0.72rem;">Vectorial 3D</button>
+                            <button class="toggle-btn" id="sim-mode-real" data-mode="real" style="padding: 0.2rem 0.6rem; font-size: 0.72rem;">Fotorrealista</button>
+                        </div>
+                        <span class="sim-badge">AUTO-SHINE LÁTEX</span>
+                    </div>
+                </div>
+
+                <!-- CONTENEDOR CENTRAL DEL LIENZO -->
+                <div class="canvas-wrapper">
+                    <!-- MODO 1: PATRÓN VECTORIAL -->
+                    <div class="view-pane active" id="pane-pattern-view">
+                        <div class="scale-indicator">
+                            <div class="scale-bar"></div>
+                            <span class="scale-text">10 cm</span>
+                        </div>
+                        <div class="svg-container" id="canvas-container"></div>
+                        <div class="zoom-controls">
+                            <button class="zoom-btn" id="zoom-in">+</button>
+                            <button class="zoom-btn" id="zoom-out">−</button>
+                            <span id="zoom-factor">80%</span>
+                        </div>
+                    </div>
+
+                    <!-- MODO 2: SIMULADOR 3D INTERACTIVO -->
+                    <div class="view-pane" id="pane-3d-view">
+                        <!-- Canvas 3D Pseudo-realista -->
+                        <div class="sim-3d-container" id="sim-3d-canvas-container">
+                            <!-- El SVG del maniquí en 3D se dibujará aquí dinámicamente -->
+                        </div>
+                        <!-- Visor Fotorrealista Oculto por defecto -->
+                        <div class="sim-real-container hidden" id="sim-real-image-container">
+                            <!-- La imagen fotorrealista se inyectará aquí -->
+                        </div>
+                        <!-- Control deslizante de rotación de 360 grados -->
+                        <div class="rotation-bar-wrapper">
+                            <label for="rotation-slider">Girar Maniquí (360°):</label>
+                            <div class="rotation-slider-container">
+                                <span class="angle-label">0°</span>
+                                <input type="range" id="rotation-slider" min="0" max="360" step="5" value="0">
+                                <span class="angle-label" id="rotation-angle-val">0°</span>
+                            </div>
+                            <span class="input-desc">Arrastra en el canvas o usa el deslizador para ver costuras laterales y traseras.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de corte dinámica para confección -->
+                <div class="cut-list-panel">
+                    <h3>✂️ Ficha de Corte y Pliegos</h3>
+                    <div class="cut-list-content" id="cut-list-dynamic"></div>
+                </div>
+            </section>
+
+        </section>
+
+        <!-- SECCIÓN DE MANUALES -->
+        <section class="manual-section glass">
+            <div class="manual-tabs">
+                <button class="manual-tab active" data-tab="fabrication">🛠️ Guía de Confección</button>
+                <button class="manual-tab" data-tab="repair">🩹 Guía de Reparación</button>
+                <button class="manual-tab" data-tab="care">✨ Cuidado y Almacenamiento</button>
+            </div>
+            <div class="manual-content">
+                <!-- TABA 1: GUÍA DE FABRICACIÓN -->
+                <div class="tab-pane active" id="tab-fabrication">
+                    <div class="guide-grid">
+                        <div class="guide-step">
+                            <div class="step-num">01</div>
+                            <h4>Herramientas de Precisión</h4>
+                            <p>El látex no se cose, se **pega**. Para empezar necesitas:</p>
+                            <ul>
+                                <li><strong>Cúter Rotatorio</strong> de 28mm o 45mm (imprescindible para cortes limpios sin desgarros).</li>
+                                <li><strong>Tapete de Corte Autocicatrizante</strong> grande.</li>
+                                <li><strong>Regla Metálica pesada</strong> para cortes rectos sin deslizamiento.</li>
+                                <li><strong>Rodillo de madera o silicona (Seam Roller)</strong> para presionar las costuras y asegurar la unión.</li>
+                            </ul>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-num">02</div>
+                            <h4>Corte y Preparación</h4>
+                            <p>Coloca la plancha de látex plana sobre el tapete. Sujeta el patrón impreso con pesas de sastre (no uses alfileres, perforan el látex).</p>
+                            <p class="warning-box">⚠️ <strong>Importante:</strong> Limpia los bordes que vas a pegar con **Disolvente de Heptano o Alcohol Isopropílico (99%)** usando un paño que no suelte pelusa. Esto elimina el talco protector de fábrica y los aceites naturales.</p>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-num">03</div>
+                            <h4>Pegado de Costuras Solapadas</h4>
+                            <p>Aplica una capa muy fina y uniforme de **Pegamento de Contacto para Goma / Disolución de Caucho** en el margen de costura (delimitado por el valor que configuraste, ej. 8mm) de ambas piezas.</p>
+                            <ul>
+                                <li>Deja secar el pegamento durante 3-5 minutos hasta que esté seco al tacto.</li>
+                                <li>Une las piezas con extrema precisión milímetro a milímetro. **¡El látex se pega al instante y no permite reposicionarse!**</li>
+                                <li>Pasa firmemente el rodillo de presión sobre la junta para eliminar burbujas de aire y sellar la costura.</li>
+                            </ul>
+                        </div>
+                        <div class="guide-step">
+                            <div class="step-num">04</div>
+                            <h4>Refuerzos y Acabado</h4>
+                            <p>Para evitar fallas estructurales catastróficas:</p>
+                            <ul>
+                                <li>Pega pequeños círculos o tiras de refuerzo de látex en el interior de todos los cruces de costuras en "T" o "X" (por ejemplo, en la entrepierna o axilas).</li>
+                                <li>Aplica tiras de refuerzo especiales para cremalleras en el reverso antes de pegar la cremallera de poliéster.</li>
+                                <li>Espolvorea talco en el interior de la prenda terminada para evitar que el látex se pegue consigo mismo y se dañe.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABA 2: GUÍA DE REPARACIÓN -->
+                <div class="tab-pane" id="tab-repair">
+                    <div class="repair-intro">
+                        <h3>🩹 Manual de Primeros Auxilios para Prendas de Látex</h3>
+                        <p>El látex es un material de alta resistencia al estiramiento uniforme, pero extremadamente vulnerable a los cortes y microdesgarros. Una pequeña perforación bajo tensión se convertirá rápidamente en una rasgadura catastrófica. Sigue estos pasos para reparar tu ropa de látex de forma profesional.</p>
+                    </div>
+
+                    <div class="repair-steps">
+                        <div class="repair-card">
+                            <h5>1. Parchear un Desgarro Limpio</h5>
+                            <p>Esta es la reparación más común y devuelve el 95% de la resistencia original a la prenda.</p>
+                            <ol>
+                                <li><strong>Estabilizar y Detener el Desgarro:</strong> Corta con unas tijeras muy afiladas los extremos del desgarro en forma redondeada. Si el desgarro termina en una punta afilada, continuará rasgándose. Redondear el extremo detiene la propagación de la tensión.</li>
+                                <li><strong>Cortar el Parche:</strong> Corta un parche de látex sobrante del mismo grosor. El parche debe ser **completamente circular u ovalado**, sobresaliendo al menos 1.5 cm del desgarro en todas las direcciones. **NUNCA utilices parches con esquinas cuadradas**, ya que las esquinas se despegan fácilmente al estirar la prenda.</li>
+                                <li><strong>Desengrasar:</strong> Limpia a fondo la zona trasera de la rasgadura y el parche con Heptano o Alcohol Isopropílico.</li>
+                                <li><strong>Encolar y Unir:</strong> Aplica pegamento en ambas superficies, deja secar 3 minutos, une perfectamente alineando los bordes del desgarro original y presiona firmemente con el rodillo. Espolvorea talco.</li>
+                            </ol>
+                        </div>
+
+                        <div class="repair-card">
+                            <h5>2. Reparación de Cremalleras Despegadas</h5>
+                            <p>Las cremalleras de poliéster suelen despegarse del látex debido al sudor y la tensión lateral.</p>
+                            <ol>
+                                <li><strong>Remover el pegamento viejo:</strong> Humedece la zona con un poco de disolvente para ablandar el pegamento viejo. Frota suavemente con el dedo para hacer rodar el adhesivo viejo en pequeñas bolas y retirarlo. No uses demasiada fuerza para no estirar el borde.</li>
+                                <li><strong>Reforzar el borde del látex:</strong> Si el borde del látex está debilitado, pega primero una tira estrecha de látex de 0.25mm a lo largo del canal de la cremallera para darle estabilidad estructural.</li>
+                                <li><strong>Aplicar imprimación a la cremallera:</strong> Las cremalleras de tela absorben más pegamento. Aplica una primera capa fina a la cinta de la cremallera y deja secar por completo. Luego aplica una segunda capa delgada a la cremallera y al látex.</li>
+                                <li><strong>Unión bajo presión:</strong> Pega con cuidado la cremallera manteniendo una tensión mínima y uniforme. Pasa el rodillo de presión repetidas veces sobre la cinta de la cremallera para asegurar una fijación mecánica óptima.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABA 3: CUIDADO Y ALMACENAMIENTO -->
+                <div class="tab-pane" id="tab-care">
+                    <div class="care-container">
+                        <div class="care-box care-do">
+                            <h4>✅ Qué Hacer (Dos)</h4>
+                            <ul>
+                                <li><strong>Lavar siempre después de usar:</strong> El sudor corporal contiene aceites y sales que corroen y descomponen el látex con el tiempo. Lávalo a mano en agua tibia con un jabón neutro suave o champú especial para látex.</li>
+                                <li><strong>Secado al aire libre:</strong> Cuelga la prenda en una percha de plástico grueso (las de metal pueden dejar manchas de óxido irreparables) en un lugar ventilado y a la sombra.</li>
+                                <li><strong>Talcado para guardar:</strong> Espolvorea talco puro (sin perfume) en el interior y exterior antes de doblar la prenda. Esto evita que los paneles de látex se adhieran permanentemente entre sí.</li>
+                                <li><strong>Usa abrillantadores de base de silicona:</strong> Utiliza exclusivamente aceites o sprays de silicona pura (por ejemplo, Vivishine) para dar un acabado ultra-brillante.</li>
+                            </ul>
+                        </div>
+                        <div class="care-box care-dont">
+                            <h4>❌ Qué Evitar (Don'ts)</h4>
+                            <ul>
+                                <li><strong>¡Cero aceites minerales o vaselina!</strong> Los aceites de masaje, lubricantes de base oleosa, cremas corporales, vaselina y aceites de cocina destruyen instantáneamente la estructura molecular del látex, dejándolo pegajoso, blando y arrugado de forma irreversible.</li>
+                                <li><strong>Evita el contacto con metales (especialmente cobre y latón):</strong> Monedas, llaves, hebillas de latón o perchas de cobre causan una reacción química inmediata llamada "tinción de cobre", que tiñe de color marrón/dorado el látex de tonos claros para siempre.</li>
+                                <li><strong>Sin luz solar directa:</strong> Los rayos UV decoloran, debilitan y agrietan el látex en pocas horas. Guarda siempre tus prendas en un lugar completamente oscuro (dentro de fundas de ropa de plástico oscuro).</li>
+                                <li><strong>Cuidado con las uñas largas:</strong> Al vestir ropa de látex ajustada, tira siempre de ella utilizando la yema de los dedos y nunca las uñas, ya que actúan como cuchillas y pueden perforar el material.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="app-footer-bar">
+        <div class="footer-container">
+            <p>&copy; 2026 LatexTailor. Diseñado para patronaje industrial y artesanal de alta precisión.</p>
+            <p class="footer-warning">Nota de Seguridad: Utilice disolventes volátiles siempre en ambientes altamente ventilados y alejados de fuentes de ignición.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Principal -->
+    <script src="app.js"></script>
+</body>
+</html>
