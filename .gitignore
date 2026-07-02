@@ -1,0 +1,5 @@
+# Ignore sync script with hardcoded local paths
+sync.ps1
+.vscode/
+.DS_Store
+Thumbs.db
