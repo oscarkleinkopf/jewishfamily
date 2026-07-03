@@ -115,189 +115,261 @@ function loadSizePreset() {
 
 // 6. GENERAR EL DIAGRAMA DEL CUERPO HUMANO INTERACTIVO (SVG BLUEPRINT)
 function renderInteractiveBodyDiagram() {
-    // Dibujo del cuerpo humano vectorial simplificado estilizado como un maniquí de costura
+    // Dibujo del cuerpo humano vectorial — Rediseñado con proporciones reales basado en imagen de referencia
     const svgCode = `
-        <svg viewBox="0 0 200 420" width="100%" height="100%" id="human-silhouette-svg">
+        <svg viewBox="0 0 300 480" width="100%" height="100%" id="human-silhouette-svg">
             <defs>
-                <!-- Filtro de brillo neon para costuras -->
                 <filter id="neon-glow" x="-20%" y="-20%" width="140%" height="140%">
                     <feGaussianBlur stdDeviation="3" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
             </defs>
             
-            <!-- Silueta base de fondo (Hecha más ancha y realista) -->
-            <path d="M 100 25 
-                     c 10 -2, 12 -18, 0 -18 c -12 0, -10 16, 0 18 
-                     v 10 
-                     c -20 2, -35 12, -40 28
-                     c -5 45, -20 110, -25 130
-                     c -2 10, 5 10, 7 5
-                     c 5 -20, 15 -80, 20 -105
-                     h 4
-                     v 55
-                     c 0 45, -8 80, -12 110
-                     c -6 45, -15 95, -18 125
-                     c -2 10, 8 10, 10 0
-                     c 5 -30, 12 -85, 15 -115
-                     c 3 -30, 8 -65, 12 -90
-                     c 4 25, 9 60, 12 90
-                     c 3 30, 10 85, 15 115
-                     c 2 10, 12 10, 10 0
-                     c -3 -30, -12 -80, -18 -125
-                     c -4 -30, -12 -65, -12 -110
-                     v -55
-                     h 4
-                     c 5 25, 15 85, 20 105
-                     c 2 5, 9 5, 7 -5
-                     c -5 -20, -20 -85, -25 -130
-                     c -5 -16, -20 -26, -40 -28 
-                     v -10 Z" 
-                  class="body-outline-silhouette" />
-
-            <!-- LÍNEAS DE MEDIDAS (Corresponden a IDs de medidas específicas) -->
-            <!-- 3. Altura (Estatura) -->
-            <line x1="25" y1="10" x2="25" y2="410" class="diagram-measure-line" id="diag-line-3" />
+            <!-- ═══ CABEZA ═══ -->
+            <ellipse cx="150" cy="30" rx="22" ry="26" class="body-outline-silhouette"/>
             
-            <!-- 4. Contorno Cabeza -->
-            <ellipse cx="100" cy="18" rx="8" ry="7" fill="none" class="diagram-measure-line" id="diag-line-4" />
+            <!-- ═══ CUERPO COMPLETO (silueta frontal con brazos y piernas separados) ═══ -->
+            <path d="
+                M 140 56
+                Q 118 62, 72 78
+                L 56 84
+                Q 42 122, 36 160
+                Q 30 198, 26 220
+                L 24 228 L 22 236 L 32 236 L 34 228
+                Q 38 202, 46 164
+                Q 54 130, 64 94
+                L 78 84
+                Q 76 98, 80 110
+                Q 86 128, 94 142
+                Q 100 152, 100 160
+                Q 94 175, 86 190
+                Q 78 200, 78 212
+                L 76 258
+                Q 74 290, 72 318
+                Q 70 358, 68 398
+                L 66 428
+                L 54 436 L 54 444 L 84 444 L 86 436
+                L 88 398
+                Q 92 358, 96 318
+                Q 100 290, 104 258
+                L 112 220
+                Q 132 214, 150 212
+                Q 168 214, 188 220
+                L 196 258
+                Q 200 290, 204 318
+                Q 208 358, 212 398
+                L 214 436
+                L 216 444 L 246 444 L 246 436 L 234 428
+                L 232 398
+                Q 230 358, 228 318
+                Q 226 290, 224 258
+                L 222 212
+                Q 222 200, 214 190
+                Q 206 175, 200 160
+                Q 200 152, 206 142
+                Q 214 128, 220 110
+                Q 224 98, 222 84
+                L 236 94
+                Q 246 130, 254 164
+                Q 262 202, 266 228
+                L 268 236 L 278 236 L 276 228 L 274 220
+                Q 270 198, 264 160
+                Q 258 122, 244 84
+                L 228 78
+                Q 182 62, 160 56
+                Z
+            " class="body-outline-silhouette"/>
+
+            <!-- ═══════════════════════════════════════════════════════════ -->
+            <!-- ═══ LÍNEAS DE MEDIDAS (las 28 medidas corporales) ═══ -->
+            <!-- ═══════════════════════════════════════════════════════════ -->
             
-            <!-- 5. Altura Cabeza -->
-            <line x1="115" y1="10" x2="115" y2="25" class="diagram-measure-line" id="diag-line-5" />
-
-            <!-- 6. Contorno Cuello -->
-            <line x1="94" y1="28" x2="106" y2="28" class="diagram-measure-line" id="diag-line-6" />
+            <!-- 3. Altura (Estatura) — línea vertical al lado derecho -->
+            <line x1="280" y1="4" x2="280" y2="444" class="diagram-measure-line" id="diag-line-3"/>
             
-            <!-- 7. Altura Cuello -->
-            <line x1="112" y1="25" x2="112" y2="33" class="diagram-measure-line" id="diag-line-7" />
+            <!-- 4. Contorno Cabeza — elipse alrededor de la cabeza -->
+            <ellipse cx="150" cy="30" rx="27" ry="31" fill="none" class="diagram-measure-line" id="diag-line-4"/>
+            
+            <!-- 5. Altura Cabeza — vertical junto a la cabeza -->
+            <line x1="180" y1="4" x2="180" y2="56" class="diagram-measure-line" id="diag-line-5"/>
 
-            <!-- 8. Hombro a hombro -->
-            <line x1="75" y1="33" x2="125" y2="33" class="diagram-measure-line" id="diag-line-8" />
+            <!-- 6. Contorno Cuello — horizontal en el cuello -->
+            <line x1="136" y1="62" x2="164" y2="62" class="diagram-measure-line" id="diag-line-6"/>
+            
+            <!-- 7. Largo de Cuello — vertical corta al lado del cuello -->
+            <line x1="172" y1="56" x2="172" y2="68" class="diagram-measure-line" id="diag-line-7"/>
 
-            <!-- 10. Contorno de Pecho / Busto -->
-            <line x1="82" y1="52" x2="118" y2="52" class="diagram-measure-line" id="diag-line-10" />
+            <!-- 8. Hombro a hombro — horizontal ancha en los hombros -->
+            <line x1="72" y1="78" x2="228" y2="78" class="diagram-measure-line" id="diag-line-8"/>
 
-            <!-- 11. Contorno de Cintura -->
-            <line x1="87" y1="85" x2="113" y2="85" class="diagram-measure-line" id="diag-line-11" />
+            <!-- 9. Axila / Pecho Superior (Armpit around) — horizontal bajo axila -->
+            <line x1="78" y1="88" x2="222" y2="88" class="diagram-measure-line" id="diag-line-9"/>
 
-            <!-- 12. Contorno de Cadera -->
-            <line x1="83" y1="115" x2="117" y2="115" class="diagram-measure-line" id="diag-line-12" />
+            <!-- 10. Contorno de Pecho / Busto — horizontal en el pecho -->
+            <line x1="80" y1="110" x2="220" y2="110" class="diagram-measure-line" id="diag-line-10"/>
 
-            <!-- 13. Contorno de Muslo -->
-            <line x1="86" y1="150" x2="99" y2="150" class="diagram-measure-line" id="diag-line-13" />
+            <!-- 11. Contorno de Cintura — horizontal en la cintura -->
+            <line x1="100" y1="160" x2="200" y2="160" class="diagram-measure-line" id="diag-line-11"/>
 
-            <!-- 14. Contorno de Rodilla -->
-            <line x1="88" y1="225" x2="98" y2="225" class="diagram-measure-line" id="diag-line-14" />
+            <!-- 12. Contorno de Cadera — horizontal en las caderas -->
+            <line x1="78" y1="200" x2="222" y2="200" class="diagram-measure-line" id="diag-line-12"/>
 
-            <!-- 15. Contorno de Pantorrilla (Shank) -->
-            <line x1="89" y1="275" x2="97" y2="275" class="diagram-measure-line" id="diag-line-15" />
+            <!-- 13. Contorno de Muslo — horizontal en el muslo izquierdo -->
+            <line x1="76" y1="240" x2="112" y2="240" class="diagram-measure-line" id="diag-line-13"/>
 
-            <!-- 16. Contorno de Tobillo -->
-            <line x1="90" y1="350" x2="96" y2="350" class="diagram-measure-line" id="diag-line-16" />
+            <!-- 14. Contorno de Rodilla — horizontal en la rodilla izquierda -->
+            <line x1="72" y1="318" x2="96" y2="318" class="diagram-measure-line" id="diag-line-14"/>
 
-            <!-- 19. Largo de Pierna -->
-            <line x1="98" y1="130" x2="93" y2="350" class="diagram-measure-line" id="diag-line-19" />
+            <!-- 15. Contorno Pantorrilla — horizontal en la pantorrilla izquierda -->
+            <line x1="70" y1="368" x2="92" y2="368" class="diagram-measure-line" id="diag-line-15"/>
 
-            <!-- 20. Contorno Bíceps -->
-            <line x1="72" y1="62" x2="79" y2="62" class="diagram-measure-line" id="diag-line-20" />
+            <!-- 16. Contorno de Tobillo — horizontal en el tobillo izquierdo -->
+            <line x1="68" y1="412" x2="88" y2="412" class="diagram-measure-line" id="diag-line-16"/>
 
-            <!-- 21. Contorno Codo -->
-            <line x1="68" y1="95" x2="75" y2="95" class="diagram-measure-line" id="diag-line-21" />
+            <!-- 17. Largo del Pie — horizontal en la base del pie izquierdo -->
+            <line x1="54" y1="444" x2="84" y2="444" class="diagram-measure-line" id="diag-line-17"/>
 
-            <!-- 23. Contorno de Muñeca -->
-            <line x1="63" y1="135" x2="69" y2="135" class="diagram-measure-line" id="diag-line-23" />
+            <!-- 18. Rodilla a Tobillo — vertical parcial en la pierna izquierda -->
+            <line x1="68" y1="318" x2="66" y2="412" class="diagram-measure-line" id="diag-line-18"/>
 
-            <!-- 24. Largo de Brazo -->
-            <line x1="77" y1="36" x2="65" y2="135" class="diagram-measure-line" id="diag-line-24" />
+            <!-- 19. Largo de Pierna — vertical interna desde entrepierna a tobillo -->
+            <line x1="110" y1="212" x2="82" y2="412" class="diagram-measure-line" id="diag-line-19"/>
 
-            <!-- 26. U-Bend (Tiro entero cuello-entrepierna-cuello) -->
-            <path d="M 100 28 Q 107 100 100 130 Q 93 100 100 28" fill="none" class="diagram-measure-line" id="diag-line-26" />
+            <!-- 20. Contorno Bíceps — horizontal en el brazo superior izquierdo -->
+            <line x1="60" y1="102" x2="76" y2="102" class="diagram-measure-line" id="diag-line-20"/>
 
-            <!-- 27. Largo Cuello a Cintura -->
-            <line x1="100" y1="28" x2="100" y2="85" class="diagram-measure-line" id="diag-line-27" />
+            <!-- 21. Contorno Codo — horizontal en el codo izquierdo -->
+            <line x1="48" y1="142" x2="64" y2="142" class="diagram-measure-line" id="diag-line-21"/>
+
+            <!-- 22. Contorno Antebrazo — horizontal en el antebrazo izquierdo -->
+            <line x1="42" y1="172" x2="58" y2="172" class="diagram-measure-line" id="diag-line-22"/>
+
+            <!-- 23. Contorno de Muñeca — horizontal en la muñeca izquierda -->
+            <line x1="32" y1="210" x2="48" y2="210" class="diagram-measure-line" id="diag-line-23"/>
+
+            <!-- 24. Largo de Brazo — diagonal a lo largo del brazo izquierdo -->
+            <line x1="72" y1="78" x2="30" y2="220" class="diagram-measure-line" id="diag-line-24"/>
+
+            <!-- 25. Largo Mano — vertical corta en la zona de la mano izquierda -->
+            <line x1="26" y1="220" x2="26" y2="236" class="diagram-measure-line" id="diag-line-25"/>
+
+            <!-- 26. U-Bend (Tiro completo cuello-entrepierna-cuello) — curva en U -->
+            <path d="M 150 62 Q 168 145 150 212 Q 132 145 150 62" fill="none" class="diagram-measure-line" id="diag-line-26"/>
+
+            <!-- 27. Talle Cuello a Cintura — vertical central -->
+            <line x1="150" y1="62" x2="150" y2="160" class="diagram-measure-line" id="diag-line-27"/>
+
+            <!-- 28. Largo Cintura a Tobillo — diagonal lateral -->
+            <line x1="150" y1="160" x2="82" y2="412" class="diagram-measure-line" id="diag-line-28"/>
 
 
-            <!-- NODOS NUMÉRICOS INTERACTIVOS (Ubicaciones lógicas sobre las líneas) -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- ═══ NODOS NUMÉRICOS INTERACTIVOS (1-28) ═══ -->
+            <!-- ═══════════════════════════════════════════════ -->
             <g id="diagram-nodes-group">
                 <!-- 3. Altura -->
-                <circle cx="25" cy="205" r="7" class="diagram-node-circle" data-id="3" />
-                <text x="25" y="208" class="diagram-node-text">3</text>
+                <circle cx="280" cy="224" r="8" class="diagram-node-circle" data-id="3"/>
+                <text x="280" y="228" class="diagram-node-text">3</text>
 
                 <!-- 4. Contorno Cabeza -->
-                <circle cx="100" cy="18" r="7" class="diagram-node-circle" data-id="4" />
-                <text x="100" y="21" class="diagram-node-text">4</text>
+                <circle cx="150" cy="0" r="8" class="diagram-node-circle" data-id="4"/>
+                <text x="150" y="4" class="diagram-node-text">4</text>
 
                 <!-- 5. Altura Cabeza -->
-                <circle cx="115" cy="17" r="6" class="diagram-node-circle" data-id="5" />
-                <text x="115" y="20" class="diagram-node-text">5</text>
+                <circle cx="180" cy="30" r="7" class="diagram-node-circle" data-id="5"/>
+                <text x="180" y="34" class="diagram-node-text">5</text>
 
                 <!-- 6. Contorno Cuello -->
-                <circle cx="100" cy="28" r="6" class="diagram-node-circle" data-id="6" />
-                <text x="100" y="31" class="diagram-node-text">6</text>
+                <circle cx="150" cy="62" r="7" class="diagram-node-circle" data-id="6"/>
+                <text x="150" y="66" class="diagram-node-text">6</text>
 
-                <!-- 7. Altura Cuello -->
-                <circle cx="112" cy="29" r="5" class="diagram-node-circle" data-id="7" />
-                <text x="112" y="32" class="diagram-node-text">7</text>
+                <!-- 7. Largo Cuello -->
+                <circle cx="172" cy="62" r="6" class="diagram-node-circle" data-id="7"/>
+                <text x="172" y="66" class="diagram-node-text">7</text>
 
                 <!-- 8. Hombro a hombro -->
-                <circle cx="100" cy="33" r="7" class="diagram-node-circle" data-id="8" />
-                <text x="100" y="36" class="diagram-node-text">8</text>
+                <circle cx="50" cy="78" r="8" class="diagram-node-circle" data-id="8"/>
+                <text x="50" y="82" class="diagram-node-text">8</text>
 
-                <!-- 10. Pecho/Busto -->
-                <circle cx="100" cy="52" r="7" class="diagram-node-circle" data-id="10" />
-                <text x="100" y="55" class="diagram-node-text">10</text>
+                <!-- 9. Axila -->
+                <circle cx="56" cy="88" r="7" class="diagram-node-circle" data-id="9"/>
+                <text x="56" y="92" class="diagram-node-text">9</text>
+
+                <!-- 10. Busto -->
+                <circle cx="62" cy="110" r="8" class="diagram-node-circle" data-id="10"/>
+                <text x="62" y="114" class="diagram-node-text">10</text>
 
                 <!-- 11. Cintura -->
-                <circle cx="100" cy="85" r="7" class="diagram-node-circle" data-id="11" />
-                <text x="100" y="88" class="diagram-node-text">11</text>
+                <circle cx="86" cy="160" r="8" class="diagram-node-circle" data-id="11"/>
+                <text x="86" y="164" class="diagram-node-text">11</text>
 
                 <!-- 12. Cadera -->
-                <circle cx="100" cy="115" r="7" class="diagram-node-circle" data-id="12" />
-                <text x="100" y="118" class="diagram-node-text">12</text>
+                <circle cx="62" cy="200" r="8" class="diagram-node-circle" data-id="12"/>
+                <text x="62" y="204" class="diagram-node-text">12</text>
 
                 <!-- 13. Muslo -->
-                <circle cx="92" cy="150" r="7" class="diagram-node-circle" data-id="13" />
-                <text x="92" y="153" class="diagram-node-text">13</text>
+                <circle cx="94" cy="240" r="8" class="diagram-node-circle" data-id="13"/>
+                <text x="94" y="244" class="diagram-node-text">13</text>
 
                 <!-- 14. Rodilla -->
-                <circle cx="93" cy="225" r="7" class="diagram-node-circle" data-id="14" />
-                <text x="93" y="228" class="diagram-node-text">14</text>
+                <circle cx="84" cy="318" r="8" class="diagram-node-circle" data-id="14"/>
+                <text x="84" y="322" class="diagram-node-text">14</text>
 
                 <!-- 15. Pantorrilla -->
-                <circle cx="93" cy="275" r="7" class="diagram-node-circle" data-id="15" />
-                <text x="93" y="278" class="diagram-node-text">15</text>
+                <circle cx="81" cy="368" r="8" class="diagram-node-circle" data-id="15"/>
+                <text x="81" y="372" class="diagram-node-text">15</text>
 
                 <!-- 16. Tobillo -->
-                <circle cx="93" cy="350" r="7" class="diagram-node-circle" data-id="16" />
-                <text x="93" y="353" class="diagram-node-text">16</text>
+                <circle cx="78" cy="412" r="7" class="diagram-node-circle" data-id="16"/>
+                <text x="78" y="416" class="diagram-node-text">16</text>
+
+                <!-- 17. Pie -->
+                <circle cx="69" cy="453" r="7" class="diagram-node-circle" data-id="17"/>
+                <text x="69" y="457" class="diagram-node-text">17</text>
+
+                <!-- 18. Rodilla a Tobillo -->
+                <circle cx="57" cy="365" r="7" class="diagram-node-circle" data-id="18"/>
+                <text x="57" y="369" class="diagram-node-text">18</text>
 
                 <!-- 19. Largo Pierna -->
-                <circle cx="96" cy="245" r="7" class="diagram-node-circle" data-id="19" />
-                <text x="96" y="248" class="diagram-node-text">19</text>
+                <circle cx="100" cy="312" r="8" class="diagram-node-circle" data-id="19"/>
+                <text x="100" y="316" class="diagram-node-text">19</text>
 
-                <!-- 20. Contorno Bíceps -->
-                <circle cx="75" cy="62" r="7" class="diagram-node-circle" data-id="20" />
-                <text x="75" y="65" class="diagram-node-text">20</text>
+                <!-- 20. Bíceps -->
+                <circle cx="50" cy="102" r="8" class="diagram-node-circle" data-id="20"/>
+                <text x="50" y="106" class="diagram-node-text">20</text>
 
-                <!-- 21. Contorno Codo -->
-                <circle cx="71" cy="95" r="7" class="diagram-node-circle" data-id="21" />
-                <text x="71" y="98" class="diagram-node-text">21</text>
+                <!-- 21. Codo -->
+                <circle cx="40" cy="142" r="8" class="diagram-node-circle" data-id="21"/>
+                <text x="40" y="146" class="diagram-node-text">21</text>
 
-                <!-- 23. Contorno Muñeca -->
-                <circle cx="66" cy="135" r="7" class="diagram-node-circle" data-id="23" />
-                <text x="66" y="138" class="diagram-node-text">23</text>
+                <!-- 22. Antebrazo -->
+                <circle cx="34" cy="172" r="7" class="diagram-node-circle" data-id="22"/>
+                <text x="34" y="176" class="diagram-node-text">22</text>
 
-                <!-- 24. Largo de Brazo -->
-                <circle cx="71" cy="80" r="7" class="diagram-node-circle" data-id="24" />
-                <text x="71" y="83" class="diagram-node-text">24</text>
+                <!-- 23. Muñeca -->
+                <circle cx="24" cy="210" r="7" class="diagram-node-circle" data-id="23"/>
+                <text x="24" y="214" class="diagram-node-text">23</text>
+
+                <!-- 24. Largo Brazo -->
+                <circle cx="44" cy="150" r="8" class="diagram-node-circle" data-id="24"/>
+                <text x="44" y="154" class="diagram-node-text">24</text>
+
+                <!-- 25. Largo Mano -->
+                <circle cx="18" cy="228" r="7" class="diagram-node-circle" data-id="25"/>
+                <text x="18" y="232" class="diagram-node-text">25</text>
 
                 <!-- 26. U-Bend -->
-                <circle cx="106" cy="100" r="7" class="diagram-node-circle" data-id="26" />
-                <text x="106" y="103" class="diagram-node-text">26</text>
+                <circle cx="168" cy="138" r="8" class="diagram-node-circle" data-id="26"/>
+                <text x="168" y="142" class="diagram-node-text">26</text>
 
-                <!-- 27. Largo Cuello a Cintura -->
-                <circle cx="100" cy="68" r="7" class="diagram-node-circle" data-id="27" />
-                <text x="100" y="71" class="diagram-node-text">27</text>
+                <!-- 27. Cuello a Cintura -->
+                <circle cx="160" cy="110" r="8" class="diagram-node-circle" data-id="27"/>
+                <text x="160" y="114" class="diagram-node-text">27</text>
+
+                <!-- 28. Cintura a Tobillo -->
+                <circle cx="116" cy="286" r="8" class="diagram-node-circle" data-id="28"/>
+                <text x="116" y="290" class="diagram-node-text">28</text>
             </g>
         </svg>
     `;

@@ -1,5 +1,6 @@
-# Ignore sync script with hardcoded local paths
+# Ignore sync and watch scripts with local paths
 sync.ps1
+watch.ps1
 .vscode/
 .DS_Store
 Thumbs.db
