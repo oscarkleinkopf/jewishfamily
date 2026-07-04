@@ -1413,3 +1413,74 @@ input[type="range"]::-webkit-slider-thumb {
     stroke-width: 1.5;
 }
 
+/* COLOR PALETTE BAR & CHIPS */
+.color-palette-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--border-radius-sm);
+    margin-right: 0.5rem;
+}
+
+.palette-title {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-right: 0.2rem;
+    text-transform: uppercase;
+}
+
+.color-chip {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: var(--transition-quick);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.color-chip:hover {
+    transform: scale(1.25);
+    border-color: #ffffff;
+}
+
+.color-chip.active {
+    transform: scale(1.2);
+    border-color: #ffffff;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+/* REAL-TIME LATEX COLOR TINT FILTERS */
+.sim-real-image-el {
+    transition: filter 0.4s ease, opacity 0.5s ease-out, transform 0.4s ease;
+}
+
+.sim-real-image-el.latex-color-black {
+    filter: none;
+}
+
+.sim-real-image-el.latex-color-pink {
+    filter: hue-rotate(300deg) saturate(3.5) brightness(1.1) contrast(1.1);
+}
+
+.sim-real-image-el.latex-color-cyan {
+    filter: hue-rotate(155deg) saturate(3.2) brightness(1.2) contrast(1.05);
+}
+
+.sim-real-image-el.latex-color-red {
+    filter: hue-rotate(330deg) saturate(4.0) brightness(0.9) contrast(1.25);
+}
+
+.sim-real-image-el.latex-color-gold {
+    filter: hue-rotate(15deg) saturate(2.8) brightness(1.3) contrast(1.1);
+}
+
+.sim-real-image-el.latex-color-purple {
+    filter: hue-rotate(250deg) saturate(3.2) brightness(1.0) contrast(1.15);
+}
+
+

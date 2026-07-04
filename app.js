@@ -73,7 +73,8 @@ let state = {
     showGrid: true,
     viewMode: "pattern", // "pattern" or "3d-sim"
     renderMode: "vector", // "vector" or "real"
-    rotationAngle: 35 // Ángulo 3D por defecto
+    rotationAngle: 35, // Ángulo 3D por defecto
+    currentColor: "black" // Color de filtro de látex fotorrealista
 };
 
 // 4. ELEMENTOS DEL DOM
@@ -665,6 +666,20 @@ function setupEventHandlers() {
     window.addEventListener("mouseup", () => {
         is3dDragging = false;
     });
+
+    // Manejador de selección de color de látex fotorrealista
+    document.querySelectorAll(".color-chip").forEach(chip => {
+        chip.addEventListener("click", (e) => {
+            document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("active"));
+            e.currentTarget.classList.add("active");
+            state.currentColor = e.currentTarget.dataset.color;
+            
+            const img = document.querySelector(".sim-real-image-el");
+            if (img) {
+                img.className = `sim-real-image-el latex-color-${state.currentColor}`;
+            }
+        });
+    });
 }
 
 function setSimMode(mode) {
@@ -697,10 +712,11 @@ function renderPhotorealisticView() {
     
     const imageName = `${state.gender}_${garmentPrefix}_${viewAngle}.png`;
     const imagePath = `assets/${imageName}`;
+    const colorClass = `latex-color-${state.currentColor || 'black'}`;
     
     realContainer.innerHTML = `
         <div class="loader-real-sim">Cargando textura de látex fotorrealista...</div>
-        <img src="${imagePath}" class="sim-real-image-el" style="opacity: 0;" onload="this.style.opacity=1; this.previousElementSibling.style.display='none'" onerror="this.previousElementSibling.textContent='Imagen no disponible para este ángulo/prenda'; this.style.display='none'">
+        <img src="${imagePath}" class="sim-real-image-el ${colorClass}" style="opacity: 0;" onload="this.style.opacity=1; this.previousElementSibling.style.display='none'" onerror="this.previousElementSibling.textContent='Imagen no disponible para este ángulo/prenda'; this.style.display='none'">
     `;
 }
 
