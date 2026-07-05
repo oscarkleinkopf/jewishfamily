@@ -188,25 +188,30 @@
           <!-- Carga dinámica de familiares -->
         </div>
 
-        <h3 class="font-hebrew-title" style="font-size: 1.5rem; margin-top: 40px; margin-bottom: 20px;">Árbol Genealógico Interactivo</h3>
-        <div class="family-tree-wrapper">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px;">
+          <h3 class="font-hebrew-title" style="font-size: 1.5rem; margin: 0;">Árbol Genealógico Interactivo</h3>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm active" id="tree-view-d3-btn"><i class="fa-solid fa-diagram-project"></i> Árbol D3 SVG</button>
+            <button class="btn btn-secondary btn-sm" id="tree-view-classic-btn"><i class="fa-solid fa-bars-staggered"></i> Niveles Clásicos</button>
+          </div>
+        </div>
+
+        <!-- Contenedor del Árbol D3 SVG -->
+        <div class="family-tree-wrapper" id="d3-tree-wrapper" style="position: relative; width: 100%; min-height: 500px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden;">
+          <div style="position: absolute; top: 12px; right: 12px; z-index: 10; display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm" id="d3-zoom-in" title="Acercar"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-secondary btn-sm" id="d3-zoom-out" title="Alejar"><i class="fa-solid fa-minus"></i></button>
+            <button class="btn btn-secondary btn-sm" id="d3-zoom-reset" title="Centrar"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+          <svg id="d3-tree-svg" style="width: 100%; height: 520px; cursor: grab;"></svg>
+        </div>
+
+        <!-- Contenedor del Árbol Clásico -->
+        <div class="family-tree-wrapper" id="classic-tree-wrapper" style="display: none;">
           <div class="tree-container" id="interactive-tree-container">
-            <!-- Nodos del árbol generacional (3 niveles) -->
-            
-            <!-- Bisabuelos/Abuelos -->
-            <div class="tree-level" id="tree-level-grandparents">
-              <!-- Dinámico -->
-            </div>
-            
-            <!-- Padres -->
-            <div class="tree-level" id="tree-level-parents">
-              <!-- Dinámico -->
-            </div>
-            
-            <!-- Hijos / Niños -->
-            <div class="tree-level" id="tree-level-children">
-              <!-- Dinámico -->
-            </div>
+            <div class="tree-level" id="tree-level-grandparents"></div>
+            <div class="tree-level" id="tree-level-parents"></div>
+            <div class="tree-level" id="tree-level-children"></div>
           </div>
         </div>
       </section>
