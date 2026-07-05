@@ -6,7 +6,8 @@
   "main": "app.js",
   "scripts": {
     "dev": "npx http-server -p 8080",
-    "backup": "node backup.js"
+    "backup": "node backup.js",
+    "watch": "node watch-backup.js"
   },
   "keywords": ["jewish", "family", "diary", "shorashim", "hebcal"],
   "author": "",
