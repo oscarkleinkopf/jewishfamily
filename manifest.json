@@ -1,0 +1,21 @@
+{
+  "name": "Dor L'Dor - Diario Familiar y Shorashim",
+  "short_name": "Dor L'Dor",
+  "description": "Diario familiar judío, árbol genealógico y creador del libro de Shorashim.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#1E3A8A",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3655/3655581.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3655/3655581.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
