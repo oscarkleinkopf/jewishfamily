@@ -448,6 +448,26 @@
             <h2 class="font-hebrew-title">Próximos Acontecimientos y Recordatorios</h2>
             <p>Fechas importantes basadas en los cumpleaños hebreos y aniversarios familiares.</p>
           </div>
+          <button class="btn btn-secondary" id="export-ics-btn">
+            <i class="fa-solid fa-calendar-plus"></i> Exportar a Calendario (.ics)
+          </button>
+        </div>
+
+        <!-- Tarjeta de Zmanim y Shabat -->
+        <div class="card" style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(30, 58, 138, 0.15), rgba(217, 119, 6, 0.15)); border-color: var(--accent-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 class="font-hebrew-title" style="margin: 0; color: var(--accent-color); font-size: 1.25rem;">
+                <i class="fa-solid fa-candle-holder"></i> Horarios de Shabat y Zmanim
+              </h3>
+              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;" id="zmanim-location-text">
+                Consultando Hebcal Zmanim...
+              </p>
+            </div>
+            <div id="zmanim-times-display" style="display: flex; gap: 16px; font-size: 0.9rem; flex-wrap: wrap;">
+              <!-- Dinámico por Hebcal API -->
+            </div>
+          </div>
         </div>
 
         <div class="reminders-container">
