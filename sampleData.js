@@ -3,7 +3,7 @@
  * Base de datos de Brajot (bendiciones) precargadas y datos iniciales (semilla) para la app Dor L'Dor.
  */
 
-export const BRAJOT_DATABASE = [
+const BRAJOT_DATABASE = [
   {
     id: 'birkat-habanim-niños',
     title: 'Birkat HaBanim (Para los Hijos - Hombres)',
@@ -78,7 +78,7 @@ export const BRAJOT_DATABASE = [
   }
 ];
 
-export const INITIAL_MEMBERS = [
+const INITIAL_MEMBERS = [
   {
     id: 'member-abraham',
     name: 'Abraham Levy',
@@ -135,7 +135,7 @@ export const INITIAL_MEMBERS = [
   }
 ];
 
-export const INITIAL_EVENTS = [
+const INITIAL_EVENTS = [
   {
     id: 'event-wedding',
     title: 'Jupá de Moisés y Rajel',
@@ -180,7 +180,7 @@ export const INITIAL_EVENTS = [
     title: 'Bar Mitzvá de David en el Muro Occidental',
     description: 'David subió a la Torá por primera vez, leyendo con perfecta entonación su Parashá en el Muro de los Lamentos (Kotel) en Jerusalén. Un viaje familiar inolvidable donde David asumió el yugo de los preceptos ante toda la congregación de generaciones pasadas.',
     category: 'Bar / Bat Mitzvá',
-    date: '2026-06-18', // Fecha ficticia cercana al tiempo del modelo
+    date: '2026-06-18',
     hebrewDate: '3 de Tamuz, 5786',
     location: 'Muro Occidental (Kotel), Jerusalén',
     taggedMembers: ['member-david', 'member-moises', 'member-rajel', 'member-abraham', 'member-sara'],
