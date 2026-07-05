@@ -1,0 +1,1441 @@
+/* ==========================================================================
+   Dor L'Dor - Premium Stylesheet
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Paleta Claro (Pergamino / Oro / Azul Real) */
+  --bg-primary: #F7F5F0;
+  --bg-secondary: #FFFDF9;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --primary-color: #0A2540;
+  --primary-rgb: 10, 37, 64;
+  --secondary-color: #1E3A8A;
+  --accent-color: #C5A059;
+  --accent-rgb: 197, 160, 89;
+  --accent-hover: #AA8239;
+  --border-color: #E5DFD3;
+  --card-bg: #FFFDF9;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-gold: 0 10px 25px -5px rgba(197, 160, 89, 0.12), 0 8px 10px -6px rgba(197, 160, 89, 0.08);
+  --input-bg: #FFFDF9;
+  --input-border: #D1C7BD;
+}
+
+[data-theme="dark"] {
+  /* Paleta Oscuro (Azul Medianoche / Negro / Oro Radiante) */
+  --bg-primary: #070B13;
+  --bg-secondary: #0E1624;
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --primary-color: #1E3A8A;
+  --primary-rgb: 30, 58, 138;
+  --secondary-color: #3B82F6;
+  --accent-color: #E5C158;
+  --accent-rgb: 229, 193, 88;
+  --accent-hover: #F5D061;
+  --border-color: #1E293B;
+  --card-bg: #0E1624;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-gold: 0 10px 25px -5px rgba(229, 193, 88, 0.15), 0 8px 10px -6px rgba(229, 193, 88, 0.1);
+  --input-bg: #151F32;
+  --input-border: #2E3E56;
+}
+
+/* ==========================================================================
+   Estilos Generales
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 {
+  color: var(--accent-color);
+}
+
+.font-hebrew-title {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.05em;
+}
+
+button, input, textarea, select {
+  font-family: inherit;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover);
+}
+
+/* ==========================================================================
+   Diseño de Contenedor Principal (Layout)
+   ========================================================================== */
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Barra Lateral (Sidebar) */
+.sidebar {
+  width: 280px;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  transition: transform 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.sidebar-brand {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.sidebar-brand h1 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .sidebar-brand h1 {
+  color: var(--accent-color);
+}
+
+.sidebar-brand p {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 20px 12px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  margin-bottom: 8px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sidebar-link i {
+  font-size: 1.15rem;
+  width: 24px;
+  text-align: center;
+  color: var(--accent-color);
+  transition: color 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(var(--accent-rgb), 0.08);
+  color: var(--text-primary);
+}
+
+.sidebar-link.active {
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .sidebar-link.active {
+  background-color: var(--accent-color);
+  color: #070B13;
+}
+
+[data-theme="dark"] .sidebar-link.active i {
+  color: #070B13;
+}
+
+.sidebar-link.active i {
+  color: var(--accent-color);
+}
+
+.sidebar-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Área de Contenido Principal */
+.main-content {
+  flex-grow: 1;
+  margin-left: 280px;
+  padding: 40px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* Navbar Móvil */
+.mobile-header {
+  display: none;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 20px;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Componentes Comunes de UI
+   ========================================================================== */
+
+/* Botones Premium */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+  box-shadow: 0 4px 6px rgba(var(--primary-rgb), 0.15);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .btn-primary {
+  background-color: var(--accent-color);
+  color: #070B13;
+  box-shadow: 0 4px 6px rgba(var(--accent-rgb), 0.2);
+}
+
+[data-theme="dark"] .btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(var(--accent-rgb), 0.08);
+}
+
+.btn-accent {
+  background-color: var(--accent-color);
+  color: #FFFFFF;
+  box-shadow: 0 4px 6px rgba(var(--accent-rgb), 0.2);
+}
+
+.btn-accent:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .btn-accent {
+  color: #070B13;
+}
+
+/* Formulario e Inputs */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Tarjetas */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Modales */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), var(--shadow-gold);
+  transform: scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 32px;
+}
+
+.modal-backdrop.show .modal {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.modal-header h3 {
+  font-size: 1.5rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--text-primary);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+  margin-top: 24px;
+}
+
+/* Vista General Encabezado */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+.view-header h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.view-header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   Sección: Línea de Tiempo (Timeline)
+   ========================================================================== */
+
+.timeline-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 30px;
+  background-color: var(--bg-secondary);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.search-input-wrapper i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+}
+
+.search-input-wrapper input {
+  padding-left: 40px;
+}
+
+.filter-category-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.category-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.category-pill:hover, .category-pill.active {
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+  border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .category-pill:hover, [data-theme="dark"] .category-pill.active {
+  background-color: var(--accent-color);
+  color: #070B13;
+  border-color: var(--accent-color);
+}
+
+/* Grid de Tarjetas de Línea de Tiempo */
+.timeline-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.timeline-card {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 32px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.timeline-card-media {
+  position: relative;
+  background-color: var(--bg-primary);
+  min-height: 250px;
+}
+
+.timeline-card-media img, .timeline-card-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.timeline-card-media .media-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #FFFFFF;
+  font-size: 2.5rem;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.timeline-card:hover .media-play-overlay {
+  opacity: 1;
+}
+
+.timeline-card-content {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.timeline-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.timeline-card-category {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-color);
+  margin-bottom: 6px;
+}
+
+.timeline-card-title {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.timeline-card-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.timeline-card-date .heb-date {
+  color: var(--accent-color);
+  font-weight: 600;
+  font-style: italic;
+}
+
+.timeline-card-body {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin: 16px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.timeline-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+  margin-top: auto;
+}
+
+/* Miembros Etiquetados */
+.tagged-members-avatars {
+  display: flex;
+  margin-left: 8px;
+}
+
+.tagged-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-secondary);
+  margin-left: -8px;
+  object-fit: cover;
+  background-color: var(--bg-primary);
+  transition: transform 0.2s ease, z-index 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.tagged-avatar:hover {
+  transform: translateY(-4px);
+  z-index: 10;
+}
+
+/* Brajá Vinculada en Tarjeta */
+.card-linked-blessing {
+  background-color: rgba(var(--accent-rgb), 0.06);
+  border-left: 3px solid var(--accent-color);
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  margin-top: 12px;
+  font-size: 0.85rem;
+}
+
+.card-linked-blessing .blessing-title {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .card-linked-blessing .blessing-title {
+  color: var(--accent-color);
+}
+
+.card-linked-blessing .blessing-hebrew {
+  font-family: serif;
+  font-size: 1.15rem;
+  text-align: right;
+  direction: rtl;
+  margin: 6px 0;
+}
+
+.card-linked-blessing .blessing-trans {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Sección: Álbum / Galería
+   ========================================================================== */
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.gallery-item img, .gallery-item video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.gallery-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.gallery-item:hover img, .gallery-item:hover video {
+  transform: scale(1.06);
+}
+
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  color: #FFFFFF;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.gallery-item:hover .gallery-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay h4 {
+  color: #FFFFFF;
+  font-size: 1.1rem;
+  margin-bottom: 2px;
+}
+
+.gallery-overlay span {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Visor de diapositivas (Carrusel Modal) */
+.slideshow-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  height: 60vh;
+}
+
+.slideshow-media {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.slideshow-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(var(--primary-rgb), 0.7);
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.slideshow-control:hover {
+  background: var(--accent-color);
+  color: #070B13;
+}
+
+.slideshow-prev {
+  left: 10px;
+}
+
+.slideshow-next {
+  right: 10px;
+}
+
+.slideshow-caption {
+  margin-top: 16px;
+  text-align: center;
+  max-width: 80%;
+}
+
+.slideshow-caption h3 {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+/* ==========================================================================
+   Sección: Árbol Genealógico y Miembros
+   ========================================================================== */
+
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.member-card-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent-color);
+  background-color: var(--bg-primary);
+}
+
+.member-card-details {
+  flex-grow: 1;
+}
+
+.member-card-name {
+  font-size: 1.2rem;
+  margin-bottom: 2px;
+}
+
+.member-card-hebrew {
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.member-card-relation {
+  display: inline-block;
+  background-color: rgba(var(--primary-rgb), 0.08);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+[data-theme="dark"] .member-card-relation {
+  background-color: rgba(var(--accent-rgb), 0.15);
+  color: var(--accent-color);
+}
+
+.member-card-birthday {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Árbol Genealógico Interactivo */
+.family-tree-wrapper {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 40px 20px;
+  overflow-x: auto;
+  box-shadow: var(--shadow-gold);
+}
+
+.tree-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+  min-width: 800px;
+}
+
+.tree-level {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  position: relative;
+}
+
+/* Conectores visuales simples */
+.tree-level::after {
+  content: '';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 2px;
+  background-color: var(--border-color);
+  z-index: 1;
+  display: none; /* Desactivado para simplificar, se usan flex conectores si se requiere */
+}
+
+.tree-node {
+  background-color: var(--card-bg);
+  border: 2px solid var(--accent-color);
+  border-radius: 12px;
+  padding: 16px;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.tree-node:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.2);
+  border-color: var(--accent-hover);
+}
+
+.tree-node-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent-color);
+  margin-bottom: 10px;
+}
+
+.tree-node-relation {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.tree-node-name {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.tree-node-hebrew {
+  font-size: 0.75rem;
+  color: var(--accent-color);
+  font-style: italic;
+}
+
+/* ==========================================================================
+   Sección: Proyecto Shorashim (Raíces)
+   ========================================================================== */
+
+.shorashim-wizard {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-gold);
+}
+
+.wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.wizard-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.wizard-step-indicator.active {
+  color: var(--primary-color);
+}
+
+[data-theme="dark"] .wizard-step-indicator.active {
+  color: var(--accent-color);
+}
+
+.wizard-step-indicator.active .step-num {
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .wizard-step-indicator.active .step-num {
+  background-color: var(--accent-color);
+  color: #070B13;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.wizard-step-content {
+  display: none;
+}
+
+.wizard-step-content.active {
+  display: block;
+}
+
+/* Buscador Genealógico Especial */
+.genealogy-finder-box {
+  background-color: rgba(var(--accent-rgb), 0.04);
+  border: 1px dashed var(--accent-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 24px;
+}
+
+.genealogy-finder-box h4 {
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.genealogy-finder-box p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.genealogy-buttons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Vista Previa de Shorashim (Parchment Style) */
+.shorashim-preview-booklet {
+  background-color: #FDFBF7;
+  color: #2D251E;
+  border: 10px double #C5A059;
+  border-radius: 4px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Playfair Display', serif;
+}
+
+.shorashim-preview-booklet h3, .shorashim-preview-booklet h4 {
+  color: #1A120B;
+}
+
+.booklet-cover {
+  text-align: center;
+  padding: 60px 0;
+  border-bottom: 2px dashed #C5A059;
+  margin-bottom: 40px;
+}
+
+.booklet-cover h2 {
+  font-size: 2.8rem;
+  font-family: 'Cinzel', serif;
+  margin-bottom: 10px;
+}
+
+.booklet-cover p {
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #705335;
+}
+
+.booklet-section {
+  margin-bottom: 32px;
+}
+
+.booklet-section h4 {
+  font-size: 1.4rem;
+  border-bottom: 1px solid #E3D9C6;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+  font-family: 'Cinzel', serif;
+}
+
+.booklet-section p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4A3E3D;
+  text-align: justify;
+}
+
+/* ==========================================================================
+   Sección: Biblioteca de Brajot
+   ========================================================================== */
+
+.brajot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.braja-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.braja-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.braja-category-tag {
+  background-color: rgba(var(--accent-rgb), 0.1);
+  color: var(--accent-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.braja-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.braja-hebrew {
+  font-family: 'Lora', serif;
+  font-size: 1.35rem;
+  text-align: right;
+  direction: rtl;
+  margin: 16px 0;
+  line-height: 1.8;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.braja-transliteration {
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.braja-translation {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.braja-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+  margin-top: auto;
+}
+
+.braja-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* ==========================================================================
+   Sección: Fechas Importantes / Recordatorios
+   ========================================================================== */
+
+.reminders-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent-color);
+}
+
+.reminder-date-badge {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.reminder-date-badge span {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.reminder-info {
+  flex-grow: 1;
+}
+
+.reminder-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.reminder-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.reminder-desc .heb {
+  color: var(--accent-color);
+  font-weight: 500;
+}
+
+/* Toast de Notificaciones */
+.toast-notification {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: var(--primary-color);
+  color: #FFFFFF;
+  padding: 12px 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .toast-notification {
+  background-color: var(--accent-color);
+  color: #070B13;
+}
+
+.toast-notification.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Configuraciones y Respaldo
+   ========================================================================== */
+
+.settings-box {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.settings-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settings-option:last-child {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   Media Queries y Adaptabilidad
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 24px 16px;
+  }
+  
+  .mobile-header {
+    display: flex;
+  }
+  
+  .timeline-card {
+    grid-template-columns: 1fr;
+  }
+  
+  .timeline-card-media {
+    min-height: 200px;
+  }
+  
+  .reminders-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .view-header h2 {
+    font-size: 1.8rem;
+  }
+}
+
+/* ==========================================================================
+   Estilos de Impresión (@media print)
+   ========================================================================== */
+
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 12pt;
+  }
+  
+  .sidebar, .mobile-header, .btn, .timeline-filters, .modal-backdrop, .toast-notification, .no-print {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .shorashim-preview-booklet {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    background-color: #FFFFFF !important;
+  }
+  
+  .booklet-cover {
+    page-break-after: always;
+    padding-top: 10cm !important;
+  }
+  
+  .booklet-section {
+    page-break-inside: avoid;
+    margin-bottom: 2cm !important;
+  }
+  
+  /* Mantener árbol en impresión */
+  .family-tree-wrapper {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  
+  .tree-container {
+    min-width: 100% !important;
+  }
+  
+  .tree-node {
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}
