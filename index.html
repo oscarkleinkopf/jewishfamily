@@ -566,6 +566,22 @@
           </div>
         </div>
 
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-microphone"></i> Grabación de Historia Oral / Audio</label>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary btn-sm" id="event-record-audio-btn">
+              <i class="fa-solid fa-circle" style="color: #DC2626;"></i> Grabar Audio
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="event-stop-audio-btn" disabled>
+              <i class="fa-solid fa-square"></i> Detener (<span id="event-audio-timer">00:00</span>)
+            </button>
+            <span id="event-audio-status" style="font-size: 0.8rem; color: var(--text-secondary);"></span>
+          </div>
+          <div id="event-audio-preview-container" style="margin-top: 10px; display: none;">
+            <audio id="event-audio-player" controls style="width: 100%; height: 36px;"></audio>
+          </div>
+        </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" id="cancel-event-modal-btn">Cancelar</button>
           <button type="submit" class="btn btn-primary">Guardar Recuerdo</button>
