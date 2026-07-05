@@ -2,10 +2,32 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
-const SCRATCH_DIR = 'C:\\Users\\oscar\\.gemini\\antigravity\\brain\\c2067f73-9d0a-4a11-8dbb-031034822380\\scratch';
-const FILES_TO_WATCH = ['index.html', 'styles.css', 'app.js', 'db.js', 'sampleData.js', 'README.md', 'package.json', 'backup.js'];
+const SCRATCH_DIR = process.env.SCRATCH_DIR || 'C:\\Users\\oscar\\.gemini\\antigravity\\scratch\\jewishfamily';
+const IGNORE_PATTERNS = ['.git', 'node_modules', '.env'];
 
 let debounceTimer = null;
+
+function copyRecursiveSync(src, dest) {
+  const exists = fs.existsSync(src);
+  const stats = exists && fs.statSync(src);
+  const isDirectory = exists && stats.isDirectory();
+  if (isDirectory) {
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest, { recursive: true });
+    }
+    fs.readdirSync(src).forEach((childItemName) => {
+      if (!IGNORE_PATTERNS.includes(childItemName)) {
+        copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
+      }
+    });
+  } else {
+    const destDir = path.dirname(dest);
+    if (!fs.existsSync(destDir)) {
+      fs.mkdirSync(destDir, { recursive: true });
+    }
+    fs.copyFileSync(src, dest);
+  }
+}
 
 function performBackup() {
   console.log(`\n⏰ [${new Date().toLocaleTimeString('es-ES')}] Cambio detectado! Realizando respaldo automático...`);
@@ -15,13 +37,7 @@ function performBackup() {
     if (!fs.existsSync(SCRATCH_DIR)) {
       fs.mkdirSync(SCRATCH_DIR, { recursive: true });
     }
-
-    for (const file of FILES_TO_WATCH) {
-      if (fs.existsSync(file)) {
-        const dest = path.join(SCRATCH_DIR, file);
-        fs.copyFileSync(file, dest);
-      }
-    }
+    copyRecursiveSync('.', SCRATCH_DIR);
     console.log('  ✓ Respaldo local en carpeta scratch actualizado.');
   } catch (err) {
     console.error('  ❌ Error en respaldo local:', err.message);
@@ -60,9 +76,13 @@ console.log('🐙 Repositorio: https://github.com/oscarkleinkopf/jewishfamily.gi
 performBackup();
 
 // Vigilar cambios en la carpeta
-fs.watch('.', { recursive: false }, (eventType, filename) => {
-  if (filename && FILES_TO_WATCH.includes(filename)) {
-    console.log(`📝 Archivo modificado: ${filename}`);
-    scheduleBackup();
+fs.watch('.', { recursive: true }, (eventType, filename) => {
+  if (filename) {
+    const parts = filename.split(path.sep);
+    if (!IGNORE_PATTERNS.some(ignore => parts.includes(ignore))) {
+      console.log(`📝 Archivo modificado: ${filename}`);
+      scheduleBackup();
+    }
   }
 });
+
