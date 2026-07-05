@@ -1,6 +1,7 @@
 /**
  * db.js
  * Capa de persistencia local usando IndexedDB para la aplicación Dor L'Dor.
+ * Configurada para ejecución directa en el navegador sin necesidad de servidor local.
  */
 
 const DB_NAME = 'DorLDorDB';
@@ -8,7 +9,7 @@ const DB_VERSION = 1;
 
 let dbInstance = null;
 
-export function initDB() {
+function initDB() {
   return new Promise((resolve, reject) => {
     if (dbInstance) {
       return resolve(dbInstance);
@@ -29,22 +30,18 @@ export function initDB() {
     request.onupgradeneeded = (event) => {
       const db = event.target.result;
 
-      // Almacén para miembros de la familia
       if (!db.objectStoreNames.contains('members')) {
         db.createObjectStore('members', { keyPath: 'id' });
       }
 
-      // Almacén para acontecimientos de la línea de tiempo
       if (!db.objectStoreNames.contains('events')) {
         db.createObjectStore('events', { keyPath: 'id' });
       }
 
-      // Almacén para datos del proyecto Shorashim (guarda un único objeto con ID 'project')
       if (!db.objectStoreNames.contains('shorashim')) {
         db.createObjectStore('shorashim', { keyPath: 'id' });
       }
 
-      // Almacén para configuraciones generales (ej. tema claro/oscuro)
       if (!db.objectStoreNames.contains('settings')) {
         db.createObjectStore('settings', { keyPath: 'key' });
       }
@@ -54,7 +51,7 @@ export function initDB() {
 
 // --- Operaciones de Miembros (Familia) ---
 
-export async function getMembers() {
+async function getMembers() {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('members', 'readonly');
@@ -66,7 +63,7 @@ export async function getMembers() {
   });
 }
 
-export async function saveMember(member) {
+async function saveMember(member) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('members', 'readwrite');
@@ -78,7 +75,7 @@ export async function saveMember(member) {
   });
 }
 
-export async function deleteMember(id) {
+async function deleteMember(id) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('members', 'readwrite');
@@ -92,7 +89,7 @@ export async function deleteMember(id) {
 
 // --- Operaciones de Acontecimientos (Eventos) ---
 
-export async function getEvents() {
+async function getEvents() {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('events', 'readonly');
@@ -100,7 +97,6 @@ export async function getEvents() {
     const request = store.getAll();
 
     request.onsuccess = () => {
-      // Ordenar por fecha gregoriana de forma descendente (los más recientes primero) por defecto
       const events = request.result || [];
       events.sort((a, b) => new Date(b.date) - new Date(a.date));
       resolve(events);
@@ -109,7 +105,7 @@ export async function getEvents() {
   });
 }
 
-export async function saveEvent(event) {
+async function saveEvent(event) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('events', 'readwrite');
@@ -121,7 +117,7 @@ export async function saveEvent(event) {
   });
 }
 
-export async function deleteEvent(id) {
+async function deleteEvent(id) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('events', 'readwrite');
@@ -133,9 +129,9 @@ export async function deleteEvent(id) {
   });
 }
 
-// --- Operaciones de Shorashim (Proyecto de Raíces) ---
+// --- Operaciones de Shorashim ---
 
-export async function getShorashimProject() {
+async function getShorashimProject() {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('shorashim', 'readonly');
@@ -147,7 +143,7 @@ export async function getShorashimProject() {
   });
 }
 
-export async function saveShorashimProject(projectData) {
+async function saveShorashimProject(projectData) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('shorashim', 'readwrite');
@@ -162,7 +158,7 @@ export async function saveShorashimProject(projectData) {
 
 // --- Operaciones de Ajustes ---
 
-export async function getSetting(key) {
+async function getSetting(key) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('settings', 'readonly');
@@ -174,7 +170,7 @@ export async function getSetting(key) {
   });
 }
 
-export async function saveSetting(key, value) {
+async function saveSetting(key, value) {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction('settings', 'readwrite');
@@ -186,13 +182,12 @@ export async function saveSetting(key, value) {
   });
 }
 
-// --- Utilidades de Respaldo (Exportación / Importación) ---
+// --- Utilidades de Respaldo ---
 
-// Auxiliar para convertir Blob a Base64 string
-export function blobToBase64(blob) {
+function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     if (!(blob instanceof Blob)) {
-      return resolve(blob); // Si no es un Blob, retornarlo tal cual
+      return resolve(blob);
     }
     const reader = new FileReader();
     reader.onloadend = () => resolve({
@@ -205,8 +200,7 @@ export function blobToBase64(blob) {
   });
 }
 
-// Auxiliar para convertir Base64 string de vuelta a Blob
-export function base64ToBlob(blobInfo) {
+function base64ToBlob(blobInfo) {
   if (!blobInfo || typeof blobInfo !== 'object' || !blobInfo.isBlob) {
     return blobInfo;
   }
@@ -230,13 +224,11 @@ export function base64ToBlob(blobInfo) {
   return new Blob(byteArrays, { type: contentType });
 }
 
-// Exporta toda la base de datos a un formato JSON serializable
-export async function exportDatabase() {
+async function exportDatabase() {
   const members = await getMembers();
   const events = await getEvents();
   const shorashim = await getShorashimProject();
   
-  // Serializar miembros (pueden tener fotos de perfil como Blobs)
   const serializedMembers = await Promise.all(members.map(async (m) => {
     const memberCopy = { ...m };
     if (memberCopy.avatar && memberCopy.avatar instanceof Blob) {
@@ -245,7 +237,6 @@ export async function exportDatabase() {
     return memberCopy;
   }));
 
-  // Serializar eventos (pueden tener archivos multimedia en el array 'media')
   const serializedEvents = await Promise.all(events.map(async (e) => {
     const eventCopy = { ...e };
     if (eventCopy.media && Array.isArray(eventCopy.media)) {
@@ -260,10 +251,8 @@ export async function exportDatabase() {
     return eventCopy;
   }));
 
-  // Serializar Shorashim (puede tener avatares o imágenes en el árbol o historias)
   const serializedShorashim = shorashim ? { ...shorashim } : null;
   if (serializedShorashim && serializedShorashim.tree) {
-    // Si hay avatares en los nodos del árbol genealógico
     for (const key in serializedShorashim.tree) {
       const node = serializedShorashim.tree[key];
       if (node && node.avatar && node.avatar instanceof Blob) {
@@ -281,17 +270,14 @@ export async function exportDatabase() {
   });
 }
 
-// Importa y sobreescribe los almacenes locales con un archivo de respaldo
-export async function importDatabase(jsonString) {
+async function importDatabase(jsonString) {
   const data = JSON.parse(jsonString);
   const db = await initDB();
 
-  // Borrar datos actuales
   await clearAllData();
 
   const transaction = db.transaction(['members', 'events', 'shorashim'], 'readwrite');
   
-  // 1. Restaurar Miembros
   if (data.members && Array.isArray(data.members)) {
     const memberStore = transaction.objectStore('members');
     for (const m of data.members) {
@@ -302,7 +288,6 @@ export async function importDatabase(jsonString) {
     }
   }
 
-  // 2. Restaurar Eventos
   if (data.events && Array.isArray(data.events)) {
     const eventStore = transaction.objectStore('events');
     for (const e of data.events) {
@@ -318,7 +303,6 @@ export async function importDatabase(jsonString) {
     }
   }
 
-  // 3. Restaurar Shorashim
   if (data.shorashim) {
     const shorashimStore = transaction.objectStore('shorashim');
     const sh = data.shorashim;
@@ -339,8 +323,7 @@ export async function importDatabase(jsonString) {
   });
 }
 
-// Limpia todos los almacenes de datos
-export async function clearAllData() {
+async function clearAllData() {
   const db = await initDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(['members', 'events', 'shorashim'], 'readwrite');
