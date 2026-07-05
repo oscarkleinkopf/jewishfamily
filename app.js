@@ -158,10 +158,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAndPreloadSeedData();
   await initTheme();
   setupEventListeners();
+  registerServiceWorker();
+  setupAudioRecorder();
   
   // Carga inicial de datos en las vistas
   await updateAllViews();
 });
+
+// --- Registro de Service Worker para PWA ---
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('PWA Service Worker listo en:', reg.scope))
+        .catch(err => console.warn('PWA Service Worker no registrado:', err));
+    });
+  }
+}
 
 // --- Descarga Muestra de Imágenes a Blobs ---
 async function urlToBlob(url) {
