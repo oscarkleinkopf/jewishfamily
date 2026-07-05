@@ -585,6 +585,32 @@ function setupEventListeners() {
     window.print();
   });
 
+  document.getElementById('export-pdf-shorashim-btn')?.addEventListener('click', () => {
+    saveShorashimFromInputs();
+    renderShorashimBooklet();
+    exportShorashimToPDF();
+  });
+
+  document.getElementById('export-ics-btn')?.addEventListener('click', async () => {
+    const members = await getMembers();
+    const events = await getEvents();
+    exportRemindersToICS(members, events);
+  });
+
+  document.getElementById('tree-view-d3-btn')?.addEventListener('click', () => {
+    document.getElementById('d3-tree-wrapper').style.display = 'block';
+    document.getElementById('classic-tree-wrapper').style.display = 'none';
+    document.getElementById('tree-view-d3-btn').classList.add('active');
+    document.getElementById('tree-view-classic-btn').classList.remove('active');
+  });
+
+  document.getElementById('tree-view-classic-btn')?.addEventListener('click', () => {
+    document.getElementById('d3-tree-wrapper').style.display = 'none';
+    document.getElementById('classic-tree-wrapper').style.display = 'block';
+    document.getElementById('tree-view-classic-btn').classList.add('active');
+    document.getElementById('tree-view-d3-btn').classList.remove('active');
+  });
+
   dom.wizardSteps.forEach(step => {
     step.addEventListener('click', () => {
       const stepNum = parseInt(step.getAttribute('data-step'));
