@@ -62,6 +62,7 @@ let state = {
     thickness: 0.40,
     tension: "tight",
     seamAllowance: 8, // mm
+    zipperOption: "back", // "none", "back", "front", "crotch"
     measurements: {}, // Llave -> Valor cm
     activeMeasureId: null, // ID enfocado (1-28)
     zoom: 0.8,
@@ -74,7 +75,11 @@ let state = {
     viewMode: "pattern", // "pattern" or "3d-sim"
     renderMode: "vector", // "vector" or "real"
     rotationAngle: 35, // Ángulo 3D por defecto
-    currentColor: "black" // Color de filtro de látex fotorrealista
+    currentColor: "black", // Color de filtro de látex fotorrealista
+    unit: "cm", // "cm" or "in"
+    showHeatmap: false,
+    wizardStep: 1,
+    selectedClient: ""
 };
 
 // 4. ELEMENTOS DEL DOM
@@ -82,6 +87,7 @@ const sizePresetSelect = document.getElementById("size-preset");
 const latexThicknessInput = document.getElementById("latex-thickness");
 const thicknessVal = document.getElementById("thickness-val");
 const tensionLevelSelect = document.getElementById("tension-level");
+const zipperOptionSelect = document.getElementById("zipper-option");
 const seamAllowanceInput = document.getElementById("seam-allowance");
 const seamVal = document.getElementById("seam-val");
 const reductionBadge = document.getElementById("reduction-total-badge");
@@ -98,10 +104,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderInteractiveBodyDiagram();
     renderMeasuresTable();
     setupEventHandlers();
+    setupUsabilityHandlers();
+    loadClientProfilesFromStorage();
     updateZoomFactor(); // Sincroniza zoom de 80% inicial
     drawPattern();
     draw3DMannequin();
     updateCutList();
+    calculateMaterialEstimation();
 });
 
 // Cargar medidas desde la base de datos de tallas extendida
@@ -1748,6 +1757,13 @@ function updateCutList() {
         `;
     }
 
+    if (state.zipperOption && state.zipperOption !== "none") {
+        const zipperText = state.zipperOption === "back" ? "Espalda" : state.zipperOption === "front" ? "Frontal" : "Entrepierna 2 Vías";
+        content += `
+            <div class="cut-item"><span class="cut-qty">2x</span><span class="cut-name">Tiras Refuerzo Cierre (${zipperText})</span><span class="cut-spec">Látex 0.25mm - 2.5cm Ancho</span></div>
+        `;
+    }
+
     cutContainer.innerHTML = content;
 }
 
@@ -1789,4 +1805,340 @@ function exportSVGPattern() {
     downloadLink.click();
     document.body.removeChild(downloadLink);
     URL.revokeObjectURL(url);
+}
+
+// 14. SUITE DE USABILIDAD: EVENTOS Y MÓDULOS
+function setupUsabilityHandlers() {
+    // Selector de Cierre
+    zipperOptionSelect.addEventListener("change", (e) => {
+        state.zipperOption = e.target.value;
+        drawPattern();
+        updateCutList();
+    });
+
+    // Toggle de Unidades (cm <-> in)
+    const unitBtn = document.getElementById("btn-unit-toggle");
+    unitBtn.addEventListener("click", () => {
+        state.unit = state.unit === "cm" ? "in" : "cm";
+        unitBtn.textContent = state.unit;
+        document.querySelectorAll(".unit-text").forEach(el => el.textContent = state.unit);
+        renderMeasuresTable();
+        drawPattern();
+        draw3DMannequin();
+    });
+
+    // Exportar Impresión Mosaico Carta (Chile: 215.9mm x 279.4mm)
+    document.getElementById("btn-export-tiled").addEventListener("click", exportLetterTiledPattern);
+
+    // Toggle Mapa de Tensión 3D (Heatmap)
+    document.getElementById("btn-toggle-heatmap").addEventListener("click", (e) => {
+        state.showHeatmap = !state.showHeatmap;
+        e.currentTarget.classList.toggle("highlight-btn", state.showHeatmap);
+        draw3DMannequin();
+    });
+
+    // Gestión de Clientes
+    document.getElementById("btn-save-client").addEventListener("click", () => {
+        document.getElementById("modal-client-save").classList.remove("hidden");
+    });
+    document.getElementById("btn-close-client-modal").addEventListener("click", () => {
+        document.getElementById("modal-client-save").classList.add("hidden");
+    });
+    document.getElementById("btn-cancel-client-save").addEventListener("click", () => {
+        document.getElementById("modal-client-save").classList.add("hidden");
+    });
+    document.getElementById("btn-confirm-client-save").addEventListener("click", () => {
+        const nameInput = document.getElementById("client-name-input");
+        if (nameInput.value.trim()) {
+            saveCurrentClientProfile(nameInput.value.trim());
+            nameInput.value = "";
+            document.getElementById("modal-client-save").classList.add("hidden");
+        }
+    });
+
+    document.getElementById("client-profile-select").addEventListener("change", (e) => {
+        if (e.target.value) {
+            loadClientProfile(e.target.value);
+        }
+    });
+
+    document.getElementById("btn-export-client-json").addEventListener("click", exportClientJSON);
+    document.getElementById("btn-import-trigger").addEventListener("click", () => {
+        document.getElementById("input-import-json").click();
+    });
+    document.getElementById("input-import-json").addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+            importClientJSON(e.target.files[0]);
+        }
+    });
+
+    // Asistente Guiado de Medidas
+    document.getElementById("btn-open-wizard").addEventListener("click", () => {
+        state.wizardStep = 1;
+        renderWizardStep();
+        document.getElementById("modal-wizard").classList.remove("hidden");
+    });
+    document.getElementById("btn-close-wizard").addEventListener("click", () => {
+        document.getElementById("modal-wizard").classList.add("hidden");
+    });
+    document.getElementById("btn-wizard-prev").addEventListener("click", () => {
+        if (state.wizardStep > 1) {
+            state.wizardStep--;
+            renderWizardStep();
+        }
+    });
+    document.getElementById("btn-wizard-next").addEventListener("click", () => {
+        // Guardar valor actual
+        const valInput = document.getElementById("wizard-measure-input");
+        const def = MEASUREMENTS_DEF[state.wizardStep - 1];
+        if (def && valInput) {
+            state.measurements[def.key] = parseFloat(valInput.value) || def.defaultVal;
+        }
+        if (state.wizardStep < 28) {
+            state.wizardStep++;
+            renderWizardStep();
+        } else {
+            document.getElementById("modal-wizard").classList.add("hidden");
+            renderMeasuresTable();
+            drawPattern();
+            draw3DMannequin();
+        }
+    });
+}
+
+// 15. CALCULADORA DE INSUMOS Y COSTOS (CHILE)
+function calculateMaterialEstimation() {
+    const bust = state.measurements["bustCircum"] || 90;
+    const waist = state.measurements["waistCircum"] || 68;
+    const hips = state.measurements["hipCircum"] || 95;
+    const leg = state.measurements["legLength"] || 72;
+
+    let baseAreaSqM = 0.5;
+    if (state.garment === "catsuit") baseAreaSqM = ((bust + hips) * 0.01) * (leg * 0.02) * 1.35;
+    else if (state.garment === "body") baseAreaSqM = ((bust + hips) * 0.01) * 0.85;
+    else if (state.garment === "stockings") baseAreaSqM = 0.45;
+    else if (state.garment === "gloves") baseAreaSqM = 0.35;
+    else if (state.garment === "mask") baseAreaSqM = 0.25;
+    else baseAreaSqM = 0.40;
+
+    // Agregar 15% de merma por desperdicio de corte
+    const totalLatexSqM = (baseAreaSqM * 1.15).toFixed(2);
+    const glueMl = Math.round(baseAreaSqM * 50);
+    
+    // Costos promedio en Chile (CLP): Látex ~ $18.000 CLP/m², Insumos/Disolvente ~ $4.000 CLP
+    const estCostCLP = Math.round((totalLatexSqM * 18000) + (glueMl * 80));
+    const formattedCost = "$" + estCostCLP.toLocaleString("es-CL") + " CLP";
+
+    document.getElementById("est-area-val").textContent = totalLatexSqM + " m²";
+    document.getElementById("est-glue-val").textContent = glueMl + " ml";
+    document.getElementById("est-cost-val").textContent = formattedCost;
+}
+
+// 16. EXPORTACIÓN MOSAICO EN TAMAÑO CARTA (CHILE: 215.9mm x 279.4mm)
+function exportLetterTiledPattern() {
+    const rawSvg = canvasContainer.querySelector("svg");
+    if (!rawSvg) return;
+
+    // Dimensiones Hoja Carta en milímetros
+    const letterWidthMM = 215.9;
+    const letterHeightMM = 279.4;
+    const marginMM = 10;
+    const printW = letterWidthMM - (marginMM * 2);
+    const printH = letterHeightMM - (marginMM * 2);
+
+    const cols = 2;
+    const rows = 3;
+
+    const patternClone = rawSvg.querySelector("g#transform-group").cloneNode(true);
+    patternClone.removeAttribute("transform");
+
+    let pagesHtml = "";
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            const pageLabel = `Fila ${String.fromCharCode(65 + r)}, Columna ${c + 1}`;
+            const offsetX = -(c * printW * 2.5);
+            const offsetY = -(r * printH * 2.5);
+
+            pagesHtml += `
+                <div class="tiled-page" style="width: ${letterWidthMM}mm; height: ${letterHeightMM}mm; padding: ${marginMM}mm;">
+                    <div style="position: absolute; top: 4mm; left: 4mm; font-size: 8pt; font-family: sans-serif; color: #333;">
+                        <strong>LatexTailor Carta 1:1</strong> — ${state.garment.toUpperCase()} — Page [${r + 1}, ${c + 1}] (${pageLabel})
+                    </div>
+                    <!-- Marcas de Registro Crosshairs (+) -->
+                    <svg width="100%" height="100%" viewBox="0 0 ${letterWidthMM} ${letterHeightMM}">
+                        <path d="M 0 10 H 20 M 10 0 V 20" stroke="#000" stroke-width="0.5"/>
+                        <path d="M ${letterWidthMM - 20} 10 H ${letterWidthMM} M ${letterWidthMM - 10} 0 V 20" stroke="#000" stroke-width="0.5"/>
+                        <path d="M 0 ${letterHeightMM - 10} H 20 M 10 ${letterHeightMM - 20} V ${letterHeightMM}" stroke="#000" stroke-width="0.5"/>
+                        <g transform="translate(${offsetX + 20}, ${offsetY + 20}) scale(0.65)">
+                            ${patternClone.innerHTML}
+                        </g>
+                    </svg>
+                </div>
+            `;
+        }
+    }
+
+    const printWin = window.open("", "_blank");
+    printWin.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Impresión Tamaño Carta 1:1 - ${state.garment}</title>
+            <style>
+                @page { size: letter portrait; margin: 0; }
+                body { margin: 0; padding: 0; font-family: sans-serif; background: #fff; }
+                .tiled-page { page-break-after: always; box-sizing: border-box; position: relative; overflow: hidden; background: #fff; }
+                .pattern-outline { fill: none; stroke: #000; stroke-width: 1.5; }
+                .seam-allowance-outline { fill: none; stroke: #666; stroke-width: 0.8; stroke-dasharray: 4, 4; }
+            </style>
+        </head>
+        <body>
+            <div class="print-tiled-container">
+                ${pagesHtml}
+            </div>
+            <script>
+                window.onload = () => { window.print(); };
+            </script>
+        </body>
+        </html>
+    `);
+    printWin.document.close();
+}
+
+// 17. GESTIÓN DE BASE DE DATOS LOCAL Y JSON DE CLIENTES
+function saveCurrentClientProfile(name) {
+    const clients = JSON.parse(localStorage.getItem("latextailor_clients") || "{}");
+    const id = "client_" + Date.now();
+    clients[id] = {
+        name: name,
+        gender: state.gender,
+        garment: state.garment,
+        measurements: { ...state.measurements },
+        date: new Date().toLocaleDateString("es-CL")
+    };
+    localStorage.setItem("latextailor_clients", JSON.stringify(clients));
+    loadClientProfilesFromStorage();
+    document.getElementById("client-profile-select").value = id;
+}
+
+function loadClientProfilesFromStorage() {
+    const select = document.getElementById("client-profile-select");
+    const clients = JSON.parse(localStorage.getItem("latextailor_clients") || "{}");
+    
+    select.innerHTML = `<option value="">— Seleccionar Cliente —</option>`;
+    for (let id in clients) {
+        const c = clients[id];
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = `${c.name} (${c.date})`;
+        select.appendChild(opt);
+    }
+}
+
+function loadClientProfile(id) {
+    const clients = JSON.parse(localStorage.getItem("latextailor_clients") || "{}");
+    const c = clients[id];
+    if (!c) return;
+
+    state.gender = c.gender;
+    state.measurements = { ...c.measurements };
+    state.sizePreset = "manual";
+    sizePresetSelect.value = "manual";
+
+    setActiveGender(c.gender);
+    renderMeasuresTable();
+    drawPattern();
+    draw3DMannequin();
+    calculateMaterialEstimation();
+}
+
+function exportClientJSON() {
+    const data = {
+        app: "LatexTailor",
+        version: "2.1.0",
+        gender: state.gender,
+        garment: state.garment,
+        measurements: state.measurements,
+        exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ficha-cliente-latex-${state.gender}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importClientJSON(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.measurements) {
+                state.measurements = { ...data.measurements };
+                if (data.gender) setActiveGender(data.gender);
+                state.sizePreset = "manual";
+                sizePresetSelect.value = "manual";
+                renderMeasuresTable();
+                drawPattern();
+                draw3DMannequin();
+                calculateMaterialEstimation();
+            }
+        } catch (err) {
+            alert("Error al leer el archivo JSON de cliente.");
+        }
+    };
+    reader.readAsText(file);
+}
+
+// 18. ASISTENTE GUIADO PASO A PASO (WIZARD)
+const WIZARD_TIPS = [
+    "Selecciona 1 para Femenino o 2 para Masculino.",
+    "Ingresa el peso corporal en kilogramos.",
+    "Ingresa la estatura total del cliente descalzo en centímetros.",
+    "Mide la circunferencia máxima de la cabeza a la altura de la frente.",
+    "Mide la altura vertical de la cabeza desde la coronilla hasta la barbilla.",
+    "Mide la circunferencia del cuello en su punto medio sin apretar.",
+    "Mide el alto vertical del cuello desde la base del mentón hasta la clavícula.",
+    "Mide la distancia de hombro a hombro por la espalda.",
+    "Mide el contorno superior del tórax pasando justo por debajo de las axilas.",
+    "Mide el contorno completo del busto/pecho en su punto más prominente.",
+    "Mide el contorno de la cintura en su parte más estrecha.",
+    "Mide el contorno completo de las caderas en la zona más prominente de los glúteos.",
+    "Mide el contorno del muslo en su parte superior cerca de la entrepierna.",
+    "Mide la circunferencia alrededor del centro de la rótula.",
+    "Mide el contorno de la pantorrilla en su punto más ancho.",
+    "Mide el contorno del tobillo justo por encima de los maleolos.",
+    "Mide el largo del pie desde el talón hasta el dedo más largo.",
+    "Mide la distancia vertical desde el centro de la rodilla hasta el tobillo.",
+    "Mide el largo interno de la pierna desde la entrepierna hasta el tobillo.",
+    "Mide el contorno del bíceps en su punto máximo de desarrollo.",
+    "Mide el contorno de la articulación del codo en extensión.",
+    "Mide el contorno del antebrazo en su zona más gruesa.",
+    "Mide el contorno de la muñeca a la altura del hueso maleolar.",
+    "Mide el largo del brazo desde el acromion (hombro) hasta la muñeca.",
+    "Mide desde el pliegue de la muñeca hasta la punta del dedo medio.",
+    "Mide el tiro completo en U desde la base del cuello frontal pasando por la entrepierna hasta la nuca.",
+    "Mide la distancia vertical desde la base frontal del cuello hasta el ombligo/cintura.",
+    "Mide la distancia lateral desde la línea de la cintura hasta el tobillo."
+];
+
+function renderWizardStep() {
+    const step = state.wizardStep;
+    const def = MEASUREMENTS_DEF[step - 1];
+    if (!def) return;
+
+    document.getElementById("wizard-progress-fill").style.width = ((step / 28) * 100) + "%";
+    document.getElementById("wizard-step-badge").textContent = `Paso ${step} de 28`;
+    document.getElementById("wizard-group-badge").textContent = def.group;
+    document.getElementById("wizard-step-title").textContent = `${def.id}. ${def.label}`;
+    document.getElementById("wizard-tip-text").textContent = WIZARD_TIPS[step - 1] || "Mide con precisión con cinta flexible.";
+    
+    const input = document.getElementById("wizard-measure-input");
+    input.value = state.measurements[def.key] || def.defaultVal;
+    
+    // Resaltar la línea en el cuerpo
+    highlightMeasurement(def.id);
 }

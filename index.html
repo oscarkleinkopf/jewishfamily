@@ -21,10 +21,20 @@
                 <span class="logo-shiny"></span>
                 <span class="logo-text">LATEX<span class="highlight">TAILOR</span></span>
             </div>
-            <div class="tagline">Diseñador Profesional de Látex • Patrones 1:1 y Maniquí Virtual 360°</div>
+            <div class="header-client-bar">
+                <span class="client-label">👤 Cliente:</span>
+                <select id="client-profile-select" class="header-select">
+                    <option value="">— Seleccionar Cliente —</option>
+                </select>
+                <button class="action-btn mini-btn" id="btn-save-client" title="Guardar Ficha de Cliente Actual">💾 Guardar</button>
+                <button class="action-btn mini-btn" id="btn-export-client-json" title="Exportar Ficha JSON">📥 JSON</button>
+                <button class="action-btn mini-btn" id="btn-import-trigger" title="Importar Ficha JSON">📤 Subir</button>
+                <input type="file" id="input-import-json" accept=".json" style="display:none;">
+            </div>
             <div class="header-badges">
+                <button class="toggle-btn unit-toggle-btn active" id="btn-unit-toggle" data-unit="cm">cm</button>
                 <span class="badge badge-premium">INTERACTIVE 3D</span>
-                <span class="badge badge-version">v2.0.0</span>
+                <span class="badge badge-version">v2.1.0</span>
             </div>
         </div>
     </header>
@@ -122,6 +132,15 @@
                                 <option value="secondskin">Segunda Piel (-12%)</option>
                             </select>
                         </div>
+                        <div class="select-wrapper mt-2">
+                            <label for="zipper-option">🤐 Cierre / Zipper:</label>
+                            <select id="zipper-option">
+                                <option value="none">Sin Cierre</option>
+                                <option value="back" selected>Trasero (Espalda)</option>
+                                <option value="front">Frontal (Pecho)</option>
+                                <option value="crotch">Entrepierna 2 Vías</option>
+                            </select>
+                        </div>
                         <div class="range-wrapper mt-2">
                             <div class="range-header">
                                 <span>Solape de Costura:</span>
@@ -133,6 +152,25 @@
                             <span>Reducción Total:</span>
                             <span id="reduction-total-badge" class="badge badge-reduction">-8.0%</span>
                         </div>
+
+                        <!-- CALCULADORA DE INSUMOS Y COSTOS -->
+                        <div class="material-estimator-card mt-3">
+                            <h4 class="card-subtitle">📊 Estimador de Insumos (Chile)</h4>
+                            <div class="estimator-grid">
+                                <div class="estimator-stat">
+                                    <span class="stat-label">Látex Necesario:</span>
+                                    <span id="est-area-val" class="stat-val">0.85 m²</span>
+                                </div>
+                                <div class="estimator-stat">
+                                    <span class="stat-label">Disolvente/Pegamento:</span>
+                                    <span id="est-glue-val" class="stat-val">45 ml</span>
+                                </div>
+                                <div class="estimator-stat full-width">
+                                    <span class="stat-label">Costo Insumos (Aprox):</span>
+                                    <span id="est-cost-val" class="stat-val highlight-val">$18.500 CLP</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </aside>
@@ -141,6 +179,7 @@
             <section class="measures-panel glass">
                 <div class="panel-header">
                     <h3><span class="icon">📋</span> Ficha de Medidas (28 Puntos)</h3>
+                    <button class="action-btn mini-btn highlight-btn" id="btn-open-wizard" title="Abrir Asistente de Medición Paso a Paso">🧙‍♂️ Asistente</button>
                 </div>
                 <div class="panel-content scrollable">
                     
@@ -159,7 +198,7 @@
                                 <tr>
                                     <th width="8%">NO.</th>
                                     <th width="62%">Medida Corporal</th>
-                                    <th width="30%">Valor (cm)</th>
+                                    <th width="30%">Valor (<span class="unit-text">cm</span>)</th>
                                 </tr>
                             </thead>
                             <tbody id="measures-table-body">
@@ -181,9 +220,11 @@
                     <div class="viewer-actions" id="pattern-actions">
                         <button class="action-btn" id="btn-reset-view">🎯 Centrar</button>
                         <button class="action-btn" id="btn-toggle-grid">🏁 Red</button>
+                        <button class="action-btn" id="btn-export-tiled" title="Exportar Mosaico listo para imprimir en Hojas Carta (Chile)">🖨️ Carta 1:1</button>
                         <button class="action-btn highlight-btn" id="btn-export">📥 SVG 1:1</button>
                     </div>
                     <div class="viewer-actions hidden" id="sim-3d-actions">
+                        <button class="action-btn" id="btn-toggle-heatmap" style="margin-right: 0.4rem;" title="Activar Mapa de Tensión de Estiramiento">🌡️ Mapa Tensión</button>
                         <div class="color-palette-bar" id="real-color-selector">
                             <span class="palette-title">Látex:</span>
                             <button class="color-chip active" data-color="black" style="background: #111116; border-color: rgba(255,255,255,0.4);" title="Negro Brillo"></button>
@@ -366,6 +407,60 @@
             <p class="footer-warning">Nota de Seguridad: Utilice disolventes volátiles siempre en ambientes altamente ventilados y alejados de fuentes de ignición.</p>
         </div>
     </footer>
+
+    <!-- MODAL 1: ASISTENTE DE MEDICIÓN PASO A PASO -->
+    <div class="modal-backdrop hidden" id="modal-wizard">
+        <div class="modal-card glass">
+            <div class="modal-header">
+                <h3>🧙‍♂️ Asistente de Medición Paso a Paso</h3>
+                <button class="modal-close-btn" id="btn-close-wizard">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="wizard-progress-bar">
+                    <div class="wizard-progress-fill" id="wizard-progress-fill"></div>
+                </div>
+                <div class="wizard-step-info">
+                    <span class="wizard-step-badge" id="wizard-step-badge">Paso 1 de 28</span>
+                    <span class="wizard-group-badge" id="wizard-group-badge">General</span>
+                </div>
+                <h4 id="wizard-step-title" class="wizard-title">Contorno de Busto</h4>
+                <div class="wizard-input-container">
+                    <div class="wizard-tip-box" id="wizard-tip-text">
+                        Pasa la cinta métrica horizontalmente por la parte más prominente del pecho/busto sin apretar excesivamente.
+                    </div>
+                    <div class="wizard-input-wrapper">
+                        <label for="wizard-measure-input">Valor (<span class="unit-text">cm</span>):</label>
+                        <input type="number" id="wizard-measure-input" class="wizard-number-input" step="0.5">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn" id="btn-wizard-prev">⬅️ Anterior</button>
+                <button class="action-btn highlight-btn" id="btn-wizard-next">Siguiente ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: GUARDAR PERFIL DE CLIENTE -->
+    <div class="modal-backdrop hidden" id="modal-client-save">
+        <div class="modal-card glass mini-modal">
+            <div class="modal-header">
+                <h3>💾 Guardar Ficha de Cliente</h3>
+                <button class="modal-close-btn" id="btn-close-client-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Asigna un nombre al perfil para guardar las 28 medidas actuales en la base de datos local:</p>
+                <div class="select-wrapper mt-2">
+                    <label for="client-name-input">Nombre del Cliente / Referencia:</label>
+                    <input type="text" id="client-name-input" placeholder="ej. María Pérez - Catsuit 0.40mm" class="wizard-number-input" style="width: 100%; text-align: left;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn" id="btn-cancel-client-save">Cancelar</button>
+                <button class="action-btn highlight-btn" id="btn-confirm-client-save">💾 Guardar Ficha</button>
+            </div>
+        </div>
+    </div>
 
     <!-- JavaScript Principal -->
     <script src="app.js"></script>
