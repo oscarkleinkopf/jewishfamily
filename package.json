@@ -1,0 +1,14 @@
+{
+  "name": "dor-ldor-jewish-family-diary",
+  "version": "1.0.0",
+  "description": "Diario familiar judío y asistente del proyecto Shorashim",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npx http-server -p 8080",
+    "backup": "node backup.js"
+  },
+  "keywords": ["jewish", "family", "diary", "shorashim", "hebcal"],
+  "author": "",
+  "license": "ISC"
+}
