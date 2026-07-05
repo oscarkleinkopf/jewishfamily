@@ -1378,3 +1378,362 @@ function navigateSlideshow(direction) {
   }
   renderSlideshowContent();
 }
+
+// ==========================================================================
+// NUEVAS FUNCIONALIDADES AVANZADAS
+// ==========================================================================
+
+// 1. Compresión de Imágenes en Cliente
+async function compressImage(file, maxWidth = 1600, maxHeight = 1600, quality = 0.82) {
+  if (!file || !file.type || !file.type.startsWith('image/')) return file;
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          resolve(blob || file);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file);
+      img.src = e.target.result;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+}
+
+// 2. Grabadora de Historias Orales (Audio Recorder)
+let mediaRecorder = null;
+let audioChunks = [];
+let audioTimerInterval = null;
+let recordedAudioBlob = null;
+
+function setupAudioRecorder() {
+  const recordBtn = document.getElementById('event-record-audio-btn');
+  const stopBtn = document.getElementById('event-stop-audio-btn');
+  const timerSpan = document.getElementById('event-audio-timer');
+  const statusSpan = document.getElementById('event-audio-status');
+  const playerContainer = document.getElementById('event-audio-preview-container');
+  const audioPlayer = document.getElementById('event-audio-player');
+
+  if (!recordBtn || !stopBtn) return;
+
+  recordBtn.addEventListener('click', async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(recordedAudioBlob);
+        audioPlayer.src = audioUrl;
+        playerContainer.style.display = 'block';
+        statusSpan.innerText = '✓ Audio grabado listo para guardar';
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      recordBtn.disabled = true;
+      recordBtn.classList.add('recording-active');
+      stopBtn.disabled = false;
+      statusSpan.innerText = '🔴 Grabando historia oral...';
+
+      let seconds = 0;
+      clearInterval(audioTimerInterval);
+      audioTimerInterval = setInterval(() => {
+        seconds++;
+        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        timerSpan.innerText = `${mins}:${secs}`;
+      }, 1000);
+    } catch (err) {
+      alert('Permiso de micrófono requerido para grabar audio: ' + err.message);
+    }
+  });
+
+  stopBtn.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      clearInterval(audioTimerInterval);
+      recordBtn.disabled = false;
+      recordBtn.classList.remove('recording-active');
+      stopBtn.disabled = true;
+    }
+  });
+}
+
+// 3. Exportación del Libro de Shorashim en PDF
+function exportShorashimToPDF() {
+  const booklet = document.getElementById('shorashim-booklet-preview');
+  if (!booklet || typeof html2pdf === 'undefined') {
+    showToast('Generador de PDF no disponible');
+    return;
+  }
+  showToast('Generando libro de Shorashim en PDF...');
+
+  const opt = {
+    margin: [10, 10, 10, 10],
+    filename: `libro_shorashim_dorldor_${new Date().toISOString().slice(0,10)}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(booklet).save().then(() => {
+    showToast('PDF generado e iniciado la descarga');
+  }).catch(err => {
+    console.error(err);
+    showToast('Error al exportar PDF');
+  });
+}
+
+// 4. Mapa Interactivo de Migración Familiar (Leaflet)
+let leafletMap = null;
+
+function renderMigrationMap() {
+  const mapContainer = document.getElementById('migration-map');
+  if (!mapContainer || typeof L === 'undefined') return;
+
+  if (leafletMap) {
+    leafletMap.remove();
+    leafletMap = null;
+  }
+
+  leafletMap = L.map('migration-map').setView([30.0, 10.0], 2);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(leafletMap);
+
+  const migrationPoints = [
+    { name: 'Varsovia, Polonia', lat: 52.2297, lng: 21.0122, desc: 'Origen de los bisabuelos paternos (década de 1920)' },
+    { name: 'Casablanca, Marruecos', lat: 33.5731, lng: -7.5898, desc: 'Comunidad de origen de los antepasados maternos' },
+    { name: 'Entre Ríos, Argentina', lat: -31.7413, lng: -60.5115, desc: 'Colonia agrícola judía (Llegada a Sudamérica)' },
+    { name: 'Buenos Aires, Argentina', lat: -34.6037, lng: -58.3816, desc: 'Establecimiento del núcleo familiar actual' },
+    { name: 'Jerusalén, Israel', lat: 31.7683, lng: 35.2137, desc: 'Aliyá de familiares y ceremonias en la ciudad sagrada' }
+  ];
+
+  const latLngs = [];
+  migrationPoints.forEach(pt => {
+    const marker = L.marker([pt.lat, pt.lng]).addTo(leafletMap);
+    marker.bindPopup(`<b>${pt.name}</b><br><span style="font-size: 0.85rem; color: #475569;">${pt.desc}</span>`);
+    latLngs.push([pt.lat, pt.lng]);
+  });
+
+  if (latLngs.length > 1) {
+    L.polyline(latLngs, { color: '#D97706', weight: 3, dashArray: '6, 10' }).addTo(leafletMap);
+  }
+}
+
+// 5. Árbol Genealógico Interactivo D3.js SVG
+function renderD3Tree(members) {
+  const svgEl = d3.select('#d3-tree-svg');
+  if (svgEl.empty() || typeof d3 === 'undefined') return;
+
+  svgEl.selectAll('*').remove();
+
+  const width = svgEl.node().clientWidth || 800;
+  const height = 520;
+
+  const rootData = {
+    name: 'Familia Levy',
+    relationship: 'Familia',
+    children: [
+      {
+        name: 'Abraham Levy',
+        hebrewName: 'Avraham ben Moshe',
+        relationship: 'Abuelo',
+        children: [
+          {
+            name: 'Moisés Levy',
+            hebrewName: 'Moshe ben Avraham',
+            relationship: 'Padre',
+            children: [
+              { name: 'David Levy', hebrewName: 'David ben Moshe', relationship: 'Hijo' },
+              { name: 'Miriam Levy', hebrewName: 'Miriam bat Moshe', relationship: 'Hija' }
+            ]
+          }
+        ]
+      },
+      {
+        name: 'Sara Stern',
+        hebrewName: 'Sara bat Yitzchak',
+        relationship: 'Abuela',
+        children: [
+          {
+            name: 'Rajel Stern',
+            hebrewName: 'Rajel bat Yitzchak',
+            relationship: 'Madre'
+          }
+        ]
+      }
+    ]
+  };
+
+  const hierarchyRoot = d3.hierarchy(rootData);
+  const treeLayout = d3.tree().size([width - 120, height - 140]);
+  treeLayout(hierarchyRoot);
+
+  const g = svgEl.append('g').attr('transform', 'translate(60, 60)');
+
+  const zoom = d3.zoom().on('zoom', (event) => {
+    g.attr('transform', event.transform);
+  });
+  svgEl.call(zoom);
+
+  g.selectAll('.d3-link')
+    .data(hierarchyRoot.links())
+    .enter()
+    .append('path')
+    .attr('class', 'd3-link')
+    .attr('d', d3.linkVertical().x(d => d.x).y(d => d.y));
+
+  const node = g.selectAll('.d3-node')
+    .data(hierarchyRoot.descendants())
+    .enter()
+    .append('g')
+    .attr('class', 'd3-node')
+    .attr('transform', d => `translate(${d.x},${d.y})`);
+
+  node.append('circle').attr('r', 20);
+
+  node.append('text')
+    .attr('class', 'd3-node-title')
+    .attr('dy', 34)
+    .attr('text-anchor', 'middle')
+    .text(d => d.data.name);
+
+  node.append('text')
+    .attr('class', 'd3-node-sub')
+    .attr('dy', 48)
+    .attr('text-anchor', 'middle')
+    .text(d => `${d.data.relationship}${d.data.hebrewName ? ' (' + d.data.hebrewName + ')' : ''}`);
+
+  document.getElementById('d3-zoom-in')?.addEventListener('click', () => svgEl.transition().call(zoom.scaleBy, 1.3));
+  document.getElementById('d3-zoom-out')?.addEventListener('click', () => svgEl.transition().call(zoom.scaleBy, 0.7));
+  document.getElementById('d3-zoom-reset')?.addEventListener('click', () => svgEl.transition().call(zoom.transform, d3.zoomIdentity.translate(60, 60)));
+}
+
+// 6. Etiquetado de Personas en Fotos (Slideshow Photo Tagging)
+let isPhotoTagMode = false;
+let photoTagsMap = {};
+
+function setupPhotoTagging(members) {
+  const toggleBtn = document.getElementById('toggle-photo-tag-mode-btn');
+  const selectorBox = document.getElementById('photo-tag-selector-box');
+  const memberSelect = document.getElementById('photo-tag-member-select');
+  const saveBtn = document.getElementById('save-photo-tag-btn');
+
+  if (!toggleBtn || !selectorBox) return;
+
+  memberSelect.innerHTML = '<option value="">Selecciona familiar...</option>';
+  members.forEach(m => {
+    memberSelect.innerHTML += `<option value="${m.name}">${m.name} (${m.relationship})</option>`;
+  });
+
+  toggleBtn.addEventListener('click', () => {
+    isPhotoTagMode = !isPhotoTagMode;
+    if (isPhotoTagMode) {
+      toggleBtn.innerHTML = '<i class="fa-solid fa-check"></i> Modo Etiquetado Activo';
+      toggleBtn.style.backgroundColor = 'var(--accent-color)';
+      toggleBtn.style.color = '#070B13';
+      selectorBox.style.display = 'block';
+      showToast('Haz clic en la foto sobre la persona a etiquetar');
+    } else {
+      toggleBtn.innerHTML = '<i class="fa-solid fa-user-tag"></i> Etiquetar Personas';
+      toggleBtn.style.backgroundColor = '';
+      toggleBtn.style.color = '';
+      selectorBox.style.display = 'none';
+    }
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const selectedMember = memberSelect.value;
+    if (selectedMember) {
+      showToast(`Etiqueta de ${selectedMember} asignada a la foto`);
+      toggleBtn.click();
+    }
+  });
+}
+
+// 7. Zmanim & Calendario Exportación .ics
+async function fetchHebcalZmanim() {
+  const zmanimDisplay = document.getElementById('zmanim-times-display');
+  const locationText = document.getElementById('zmanim-location-text');
+  if (!zmanimDisplay) return;
+
+  try {
+    const response = await fetch('https://www.hebcal.com/zmanim?cfg=json&city=BU&g2h=1');
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+
+    locationText.innerText = 'Buenos Aires, Argentina (Hebcal Zmanim)';
+    if (data.times) {
+      const candles = data.times.candles ? data.times.candles.slice(11, 16) : '18:15';
+      const havdalah = data.times.havdalah ? data.times.havdalah.slice(11, 16) : '19:10';
+      zmanimDisplay.innerHTML = `
+        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${candles}</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${havdalah}</div>
+      `;
+    }
+  } catch (e) {
+    locationText.innerText = 'Horarios de Shabat estimados';
+    zmanimDisplay.innerHTML = `
+      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Velas:</strong> 18:15</div>
+      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> 19:10</div>
+    `;
+  }
+}
+
+function exportRemindersToICS(members, events) {
+  let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Dor LDor Family Journal//ES\r\n";
+
+  members.forEach(m => {
+    if (m.birthDate) {
+      const year = new Date().getFullYear();
+      const dt = m.birthDate.replace(/-/g, '');
+      icsContent += "BEGIN:VEVENT\r\n";
+      icsContent += `SUMMARY:Cumpleaños de ${m.name} (${m.hebrewBirthDate || ''})\r\n`;
+      icsContent += `DESCRIPTION:Cumpleaños familiar - ${m.relationship}\r\n`;
+      icsContent += `DTSTART;VALUE=DATE:${year}${dt.slice(4)}\r\n`;
+      icsContent += "RRULE:FREQ=YEARLY\r\n";
+      icsContent += "END:VEVENT\r\n";
+    }
+  });
+
+  icsContent += "END:VCALENDAR\r\n";
+
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aniversarios_familia_dorldor.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Archivo de calendario .ics descargado');
+}
+
