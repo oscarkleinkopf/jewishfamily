@@ -669,9 +669,25 @@
         
         <button class="slideshow-control slideshow-next" id="slideshow-next-btn"><i class="fa-solid fa-chevron-right"></i></button>
       </div>
-      <div class="slideshow-caption" style="margin: 20px auto 0 auto; color: #E5E7EB;">
-        <h3 id="slideshow-caption-title" style="color: var(--accent-color);"></h3>
-        <p id="slideshow-caption-desc"></p>
+      <div class="slideshow-caption" style="margin: 20px auto 0 auto; color: #E5E7EB; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 id="slideshow-caption-title" style="color: var(--accent-color);"></h3>
+          <p id="slideshow-caption-desc"></p>
+        </div>
+        <div id="slideshow-tagging-controls" style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn btn-secondary btn-sm" id="toggle-photo-tag-mode-btn" style="font-size: 0.8rem;">
+            <i class="fa-solid fa-user-tag"></i> Etiquetar Personas
+          </button>
+        </div>
+      </div>
+      <div id="photo-tag-selector-box" style="display: none; padding: 12px; background: #0F172A; border: 1px solid #1E293B; border-radius: 8px; margin-top: 10px;">
+        <span style="font-size: 0.8rem; color: #94A3B8;">1. Haz clic sobre la persona en la foto | 2. Elige el familiar:</span>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <select id="photo-tag-member-select" class="form-control" style="font-size: 0.85rem; padding: 4px 8px;">
+            <!-- Dinámico -->
+          </select>
+          <button class="btn btn-primary btn-sm" id="save-photo-tag-btn">Guardar</button>
+        </div>
       </div>
     </div>
   </div>
