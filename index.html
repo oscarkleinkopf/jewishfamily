@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dor L'Dor - Diario Familiar Judío y Proyecto Shorashim</title>
   <meta name="description" content="Guarda los acontecimientos familiares importantes de la vida judía y crea tu árbol genealógico y libro de Shorashim.">
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1E3A8A">
   <!-- CSS principal -->
   <link rel="stylesheet" href="styles.css">
   <!-- FontAwesome para iconos -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leaflet CSS para Mapa de Migración -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
@@ -653,7 +658,11 @@
     <span id="toast-message">Guardado con éxito</span>
   </div>
 
-  <!-- Scripts de la Aplicación Standalone (CORS-free, sin servidor necesario) -->
+  <!-- Librerías Externas para Mapa, PDF y Árbol D3 -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <!-- Scripts de la Aplicación Standalone -->
   <script src="db.js"></script>
   <script src="sampleData.js"></script>
   <script src="app.js"></script>
