@@ -1,30 +1,8 @@
 /**
  * app.js
  * Lógica principal del Diario Familiar y Proyecto Shorashim "Dor L'Dor".
+ * Diseñado para ejecución sin necesidad de servidor local (CORS-free standalone script).
  */
-
-import {
-  initDB,
-  getMembers,
-  saveMember,
-  deleteMember,
-  getEvents,
-  saveEvent,
-  deleteEvent,
-  getShorashimProject,
-  saveShorashimProject,
-  getSetting,
-  saveSetting,
-  exportDatabase,
-  importDatabase,
-  clearAllData
-} from './db.js';
-
-import {
-  BRAJOT_DATABASE,
-  INITIAL_MEMBERS,
-  INITIAL_EVENTS
-} from './sampleData.js';
 
 // --- Diccionario de traducción de meses hebreos ---
 const HEBREW_MONTHS_ES = {
@@ -215,7 +193,7 @@ async function checkAndPreloadSeedData() {
         relationship: m.relationship,
         birthDate: m.birthDate,
         hebrewBirthDate: m.hebrewBirthDate,
-        avatar: blob || m.imageUrl // guarda blob o URL como fallback
+        avatar: blob || m.imageUrl
       });
     }
 
@@ -233,7 +211,7 @@ async function checkAndPreloadSeedData() {
         location: e.location,
         taggedMembers: e.taggedMembers,
         linkedBlessings: e.linkedBlessings,
-        imageUrl: !blob ? e.imageUrl : null, // fallback url
+        imageUrl: !blob ? e.imageUrl : null,
         media: media
       });
     }
@@ -286,7 +264,6 @@ async function updateAllViews() {
   renderBrajot(events);
   renderReminders(members, events);
   
-  // Actualizar listas desplegables de selección
   populateFilterMemberSelect(members);
   populateTaggedMembersCheckboxes(members);
 }
@@ -299,12 +276,11 @@ async function fetchHebrewDate(gregorianDateString) {
     if (!response.ok) throw new Error();
     const data = await response.json();
     
-    // Formatear mes en español
     const monthEs = HEBREW_MONTHS_ES[data.hm] || data.hm;
     return `${data.hd} de ${monthEs}, ${data.hy}`;
   } catch (e) {
     console.error('Error al consultar Hebcal API:', e);
-    return ''; // retornará vacío para que el usuario pueda escribirlo manualmente si falla
+    return '';
   }
 }
 
@@ -328,23 +304,19 @@ function switchView(viewName) {
     }
   });
 
-  // Ocultar barra lateral en móviles tras navegar
   if (window.innerWidth <= 1024) {
     dom.sidebar.classList.remove('show');
   }
 
-  // Scroll al inicio
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // --- Configuración de Event Listeners ---
 function setupEventListeners() {
-  // Botón menú móvil
   dom.menuToggleBtn.addEventListener('click', () => {
     dom.sidebar.classList.toggle('show');
   });
 
-  // Clic en enlaces de barra lateral
   dom.navLinks.forEach(link => {
     link.addEventListener('click', () => {
       const view = link.getAttribute('data-view');
@@ -352,7 +324,6 @@ function setupEventListeners() {
     });
   });
 
-  // Botón Alternar Tema Claro/Oscuro
   dom.themeToggleBtn.addEventListener('click', async () => {
     currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', currentTheme);
@@ -361,7 +332,7 @@ function setupEventListeners() {
     showToast(`Modo ${currentTheme === 'light' ? 'Claro' : 'Oscuro'} activado`);
   });
 
-  // --- Operaciones de Respaldo ---
+  // Respaldo
   dom.exportBtn.addEventListener('click', async () => {
     try {
       const dbJson = await exportDatabase();
@@ -413,8 +384,6 @@ function setupEventListeners() {
     }
   });
 
-  // --- Eventos de Formularios y Modales ---
-  
   // MODAL ACONTECIMIENTO (EVENTO)
   dom.addEventBtn.addEventListener('click', () => {
     dom.addEventForm.reset();
@@ -427,7 +396,6 @@ function setupEventListeners() {
   dom.closeEventModalBtn.addEventListener('click', () => closeModal(dom.modalAddEvent));
   dom.cancelEventModalBtn.addEventListener('click', () => closeModal(dom.modalAddEvent));
 
-  // Autocalcular fecha hebrea en evento
   dom.eventDateInput.addEventListener('change', async (e) => {
     dom.eventHebDateInput.placeholder = 'Consultando calendario hebreo...';
     const hebDate = await fetchHebrewDate(e.target.value);
@@ -445,16 +413,13 @@ function setupEventListeners() {
     const location = dom.eventLocationInput.value;
     const description = dom.eventDescInput.value;
     
-    // Obtener miembros etiquetados
     const taggedMembers = [];
     dom.eventTaggedCheckboxes.querySelectorAll('input:checked').forEach(cb => {
       taggedMembers.push(cb.value);
     });
 
-    // Cargar multimedia adjunta
     const media = [];
     
-    // Foto
     const photoFile = dom.eventPhotoInput.files[0];
     if (photoFile) {
       media.push({
@@ -465,7 +430,6 @@ function setupEventListeners() {
       });
     }
 
-    // Video
     const videoFile = dom.eventVideoInput.files[0];
     if (videoFile) {
       media.push({
@@ -476,7 +440,6 @@ function setupEventListeners() {
       });
     }
 
-    // Mantener la multimedia existente si es una edición
     let existingMedia = [];
     let linkedBlessings = [];
     if (dom.eventIdInput.value) {
@@ -519,7 +482,6 @@ function setupEventListeners() {
   dom.closeMemberModalBtn.addEventListener('click', () => closeModal(dom.modalAddMember));
   dom.cancelMemberModalBtn.addEventListener('click', () => closeModal(dom.modalAddMember));
 
-  // Autocalcular fecha hebrea en familiar
   dom.memberBirthInput.addEventListener('change', async (e) => {
     dom.memberHebBirthInput.placeholder = 'Consultando...';
     const hebDate = await fetchHebrewDate(e.target.value);
@@ -541,7 +503,6 @@ function setupEventListeners() {
     if (photoFile) {
       avatar = photoFile;
     } else if (dom.memberIdInput.value) {
-      // conservar foto anterior
       const allMembers = await getMembers();
       const oldM = allMembers.find(m => m.id === dom.memberIdInput.value);
       if (oldM) avatar = oldM.avatar;
@@ -563,7 +524,7 @@ function setupEventListeners() {
     await updateAllViews();
   });
 
-  // --- Filtros de Línea de Tiempo ---
+  // Filtros de Línea de Tiempo
   dom.searchEventsInput.addEventListener('input', async () => {
     const events = await getEvents();
     const members = await getMembers();
@@ -586,17 +547,15 @@ function setupEventListeners() {
     });
   });
 
-  // --- Shorashim Wizard & booklet toggle ---
+  // Shorashim
   dom.shorashimToggleViewBtn.addEventListener('click', () => {
     if (dom.shorashimEditor.style.display !== 'none') {
-      // Ir a la vista previa del libro
       saveShorashimFromInputs();
       renderShorashimBooklet();
       dom.shorashimEditor.style.display = 'none';
       dom.shorashimBooklet.style.display = 'block';
       dom.shorashimToggleViewBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i> Editar Proyecto';
     } else {
-      // Volver a la edición
       dom.shorashimEditor.style.display = 'block';
       dom.shorashimBooklet.style.display = 'none';
       dom.shorashimToggleViewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> Vista Previa Libro';
@@ -609,7 +568,6 @@ function setupEventListeners() {
     window.print();
   });
 
-  // Controladores de pasos del asistente
   dom.wizardSteps.forEach(step => {
     step.addEventListener('click', () => {
       const stepNum = parseInt(step.getAttribute('data-step'));
@@ -627,12 +585,10 @@ function setupEventListeners() {
     if (currentShorashimStep < 4) {
       goToWizardStep(currentShorashimStep + 1);
     } else {
-      // Al final del wizard, activar la vista previa del folleto
       dom.shorashimToggleViewBtn.click();
     }
   });
 
-  // Auto-guardado en inputs Shorashim al escribir
   const shInputs = [
     dom.shChildName, dom.shChildHebName, dom.shChildNamedAfter, dom.shChildBio,
     dom.shParentsStory, dom.shSiblingsInfo, dom.shGrandparentsStory,
@@ -644,12 +600,12 @@ function setupEventListeners() {
     });
   });
 
-  // --- Buscador Genealógico Especial ---
+  // Buscador Genealógico
   dom.searchMyHeritageBtn.addEventListener('click', () => launchGenealogySearch('myheritage'));
   dom.searchGeniBtn.addEventListener('click', () => launchGenealogySearch('geni'));
   dom.searchFamilySearchBtn.addEventListener('click', () => launchGenealogySearch('familysearch'));
 
-  // --- Brajot Categorías ---
+  // Brajot
   dom.brajotCategoryPills.forEach(pill => {
     pill.addEventListener('click', async () => {
       dom.brajotCategoryPills.forEach(p => p.classList.remove('active'));
@@ -688,12 +644,11 @@ function setupEventListeners() {
     await updateAllViews();
   });
 
-  // MODAL SLIDESHOW (Visor Multimedia)
+  // MODAL SLIDESHOW
   dom.closeSlideshowBtn.addEventListener('click', () => closeModal(dom.modalSlideshow));
   dom.slideshowPrevBtn.addEventListener('click', () => navigateSlideshow(-1));
   dom.slideshowNextBtn.addEventListener('click', () => navigateSlideshow(1));
 
-  // Cerrar modales clicando fuera
   window.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal-backdrop')) {
       closeModal(e.target);
@@ -710,7 +665,6 @@ function closeModal(modalEl) {
   modalEl.classList.remove('show');
 }
 
-// --- Toast de Notificación ---
 function showToast(message) {
   dom.toastMessage.innerText = message;
   dom.toast.classList.add('show');
@@ -721,7 +675,6 @@ function showToast(message) {
 
 // --- RENDERIZADORES ---
 
-// 1. Línea de Tiempo
 function renderTimeline(events, members) {
   dom.timelineContainer.innerHTML = '';
   
@@ -738,7 +691,6 @@ function renderTimeline(events, members) {
     return;
   }
 
-  // Diccionario de familiares por ID
   const membersMap = {};
   members.forEach(m => { membersMap[m.id] = m; });
 
@@ -746,8 +698,7 @@ function renderTimeline(events, members) {
     const card = document.createElement('article');
     card.className = 'card timeline-card';
 
-    // Determinar la imagen del evento
-    let mediaSrc = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800'; // Default placeholder
+    let mediaSrc = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800';
     let isVideo = false;
     
     if (event.media && event.media.length > 0) {
@@ -769,7 +720,6 @@ function renderTimeline(events, members) {
           <img src="${mediaSrc}" alt="${event.title}" loading="lazy">
          </div>`;
 
-    // Renderizar familiares etiquetados
     let taggedHtml = '';
     if (event.taggedMembers && event.taggedMembers.length > 0) {
       taggedHtml = '<div class="tagged-members-avatars">';
@@ -783,7 +733,6 @@ function renderTimeline(events, members) {
       taggedHtml += '</div>';
     }
 
-    // Renderizar Brajot vinculadas
     let blessingsHtml = '';
     if (event.linkedBlessings && event.linkedBlessings.length > 0) {
       event.linkedBlessings.forEach(bId => {
@@ -827,19 +776,16 @@ function renderTimeline(events, members) {
       </div>
     `;
 
-    // Clic en la tarjeta abre el visor si hay multimedia
     const mediaContainer = card.querySelector('.timeline-card-media');
     mediaContainer.addEventListener('click', () => {
       openSlideshowFromEvent(event);
     });
 
-    // Clic en editar
     card.querySelector('.edit-event-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       openEditEventModal(event);
     });
 
-    // Clic en eliminar
     card.querySelector('.delete-event-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       handleDeleteEvent(event.id);
@@ -849,7 +795,6 @@ function renderTimeline(events, members) {
   });
 }
 
-// Filtrado de la Línea de Tiempo
 function filterAndRenderTimeline(events, members) {
   const query = dom.searchEventsInput.value.toLowerCase();
   const selectedMember = dom.filterMemberSelect.value;
@@ -857,15 +802,11 @@ function filterAndRenderTimeline(events, members) {
   const selectedCategory = activePill ? activePill.getAttribute('data-category') : 'all';
 
   const filteredEvents = events.filter(e => {
-    // 1. Filtro de Búsqueda de Texto
     const matchesQuery = e.title.toLowerCase().includes(query) || 
                          e.description.toLowerCase().includes(query) || 
                          (e.location && e.location.toLowerCase().includes(query));
     
-    // 2. Filtro de Familiar Etiquetado
     const matchesMember = !selectedMember || (e.taggedMembers && e.taggedMembers.includes(selectedMember));
-    
-    // 3. Filtro de Categoría
     const matchesCategory = selectedCategory === 'all' || e.category === selectedCategory;
 
     return matchesQuery && matchesMember && matchesCategory;
@@ -874,7 +815,6 @@ function filterAndRenderTimeline(events, members) {
   renderTimeline(filteredEvents, members);
 }
 
-// Rellenar selectores
 function populateFilterMemberSelect(members) {
   const currentVal = dom.filterMemberSelect.value;
   dom.filterMemberSelect.innerHTML = '<option value="">Todos los familiares</option>';
@@ -896,7 +836,6 @@ function populateTaggedMembersCheckboxes(members) {
   });
 }
 
-// Abrir edición de evento
 function openEditEventModal(event) {
   dom.eventIdInput.value = event.id;
   dom.eventTitleInput.value = event.title;
@@ -906,11 +845,9 @@ function openEditEventModal(event) {
   dom.eventLocationInput.value = event.location || '';
   dom.eventDescInput.value = event.description;
   
-  // Limpiar ficheros cargados
   dom.eventPhotoInput.value = '';
   dom.eventVideoInput.value = '';
 
-  // Marcar los familiares
   dom.eventTaggedCheckboxes.querySelectorAll('input').forEach(cb => {
     cb.checked = event.taggedMembers && event.taggedMembers.includes(cb.value);
   });
@@ -927,7 +864,6 @@ async function handleDeleteEvent(id) {
   }
 }
 
-// 2. Galería / Álbum
 function renderGallery(events) {
   dom.galleryContainer.innerHTML = '';
   slideshowMediaList = [];
@@ -977,7 +913,6 @@ function renderGallery(events) {
         count++;
       });
     } else if (event.imageUrl) {
-      // Fallback
       slideshowMediaList.push({
         title: event.title,
         desc: event.description,
@@ -1016,7 +951,6 @@ function renderGallery(events) {
   }
 }
 
-// 3. Familia y Árbol Genealógico
 function renderFamily(members) {
   dom.familyMembersContainer.innerHTML = '';
   
@@ -1028,19 +962,17 @@ function renderFamily(members) {
     return;
   }
 
-  // Limpiar niveles del árbol
   dom.treeLevelGrandparents.innerHTML = '';
   dom.treeLevelParents.innerHTML = '';
   dom.treeLevelChildren.innerHTML = '';
 
   members.forEach(m => {
-    // 1. Tarjeta de Miembro en la Lista
     const card = document.createElement('div');
     card.className = 'card member-card';
     
     const avatarUrl = m.avatar && m.avatar instanceof Blob 
       ? URL.createObjectURL(m.avatar) 
-      : (m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'); // default avatar
+      : (m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
 
     card.innerHTML = `
       <img src="${avatarUrl}" class="member-card-avatar" alt="${m.name}">
@@ -1067,7 +999,6 @@ function renderFamily(members) {
 
     dom.familyMembersContainer.appendChild(card);
 
-    // 2. Agregar al Árbol Genealógico según el parentesco
     const treeNode = document.createElement('div');
     treeNode.className = 'tree-node';
     treeNode.innerHTML = `
@@ -1090,7 +1021,6 @@ function renderFamily(members) {
     }
   });
 
-  // Si no hay nodos en algún nivel, colocar un placeholder vacío
   const checkEmptyLevel = (el, label) => {
     if (el.children.length === 0) {
       el.innerHTML = `<div style="color: var(--text-secondary); font-size: 0.85rem; padding: 20px; border: 1px dashed var(--border-color); border-radius: 8px;">No hay registrados (${label})</div>`;
@@ -1122,7 +1052,6 @@ async function handleDeleteMember(id) {
   }
 }
 
-// 4. Proyecto Shorashim (Raíces)
 async function renderShorashim() {
   const project = await getShorashimProject();
   if (project) {
@@ -1173,13 +1102,11 @@ function goToWizardStep(stepNum) {
   });
   document.getElementById(`step-content-${stepNum}`).classList.add('active');
 
-  // Habilitar/deshabilitar botones de navegación
   dom.wizardPrevBtn.disabled = stepNum === 1;
   dom.wizardNextBtn.innerText = stepNum === 4 ? 'Vista Previa Libro' : 'Siguiente';
 }
 
 function renderShorashimBooklet() {
-  // Llenar datos de la vista previa imprimible
   document.getElementById('print-child-name-cover').innerText = `Presentado por: ${dom.shChildName.value || '______'}`;
   document.getElementById('print-child-name').innerText = dom.shChildName.value || '______';
   document.getElementById('print-child-heb-name').innerText = dom.shChildHebName.value || '______';
@@ -1194,7 +1121,6 @@ function renderShorashimBooklet() {
   document.getElementById('print-objects').innerText = dom.shObjects.value || 'Sin información cargada.';
 }
 
-// Búsqueda en MyHeritage / Geni / FamilySearch (Operadores de búsqueda avanzada Google)
 function launchGenealogySearch(site) {
   const name = dom.genSearchName.value.trim();
   const year = dom.genSearchYear.value.trim();
@@ -1210,7 +1136,6 @@ function launchGenealogySearch(site) {
   else if (site === 'geni') siteQuery = 'site:geni.com';
   else if (site === 'familysearch') siteQuery = 'site:familysearch.org';
 
-  // Construir consulta estructurada
   let query = `${siteQuery} "${name}"`;
   if (year) query += ` ${year}`;
   if (country) query += ` "${country}"`;
@@ -1219,7 +1144,6 @@ function launchGenealogySearch(site) {
   window.open(searchUrl, '_blank');
 }
 
-// 5. Biblioteca de Brajot (Bendiciones)
 function renderBrajot(events, filterCategory = 'all') {
   dom.brajotContainer.innerHTML = '';
 
@@ -1251,14 +1175,12 @@ function renderBrajot(events, filterCategory = 'all') {
       </div>
     `;
 
-    // Clic en copiar
     card.querySelector('.copy-braja-btn').addEventListener('click', () => {
       const textToCopy = `${braja.title}\n\nHebreo:\n${braja.hebrew}\n\nFonetica:\n${braja.transliteration}\n\nTraduccion:\n${braja.translation}`;
       navigator.clipboard.writeText(textToCopy);
       showToast('Bendición copiada al portapapeles');
     });
 
-    // Clic en vincular
     card.querySelector('.link-braja-btn').addEventListener('click', () => {
       openLinkBrajaModal(braja, events);
     });
@@ -1279,7 +1201,6 @@ function openLinkBrajaModal(braja, events) {
   openModal(dom.modalLinkBraja);
 }
 
-// 6. Recordatorios e hitos (Fechas Importantes)
 function renderReminders(members, events) {
   dom.birthdayContainer.innerHTML = '';
   dom.yahrtzeitContainer.innerHTML = '';
@@ -1290,14 +1211,12 @@ function renderReminders(members, events) {
     return;
   }
 
-  // Ordenar familiares por mes y día de cumpleaños
   const sortedBirthdays = [...members].sort((a, b) => {
     const dateA = new Date(a.birthDate);
     const dateB = new Date(b.birthDate);
     return (dateA.getMonth() - dateB.getMonth()) || (dateA.getDate() - dateB.getDate());
   });
 
-  // Renderizar Cumpleaños
   sortedBirthdays.forEach(m => {
     const birth = new Date(m.birthDate);
     const month = birth.toLocaleString('es-ES', { month: 'short' });
@@ -1321,7 +1240,6 @@ function renderReminders(members, events) {
     dom.birthdayContainer.appendChild(item);
   });
 
-  // Filtrar eventos de Yahrtzeit / Sepelio
   const yahrtzeitEvents = events.filter(e => e.category === 'Yahrtzeit / Sepelio');
 
   if (yahrtzeitEvents.length === 0) {
@@ -1359,9 +1277,7 @@ function renderReminders(members, events) {
   });
 }
 
-// --- VISOR SLIDESHOW (CARRUSEL) MULTIMEDIA ---
 function openSlideshowFromEvent(event) {
-  // Encontrar el índice de la multimedia del evento en la lista general de multimedia
   const firstMedia = event.media && event.media[0];
   let searchUrl = '';
 
@@ -1370,7 +1286,7 @@ function openSlideshowFromEvent(event) {
   } else if (event.imageUrl) {
     searchUrl = event.imageUrl;
   } else {
-    return; // No hay multimedia
+    return;
   }
 
   const idx = slideshowMediaList.findIndex(item => item.url === searchUrl || item.url === event.imageUrl);
