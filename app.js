@@ -273,12 +273,16 @@ async function updateAllViews() {
   renderTimeline(events, members);
   renderGallery(events);
   renderFamily(members);
+  renderD3Tree(members);
   renderShorashim();
+  renderMigrationMap();
   renderBrajot(events);
   renderReminders(members, events);
+  fetchHebcalZmanim();
   
   populateFilterMemberSelect(members);
   populateTaggedMembersCheckboxes(members);
+  setupPhotoTagging(members);
 }
 
 // --- API de Conversión Calendario Hebreo (Hebcal) ---
