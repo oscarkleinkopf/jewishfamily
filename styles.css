@@ -1439,3 +1439,118 @@ a:hover {
     break-inside: avoid;
   }
 }
+
+/* ==========================================================================
+   Nuevos Estilos: D3 Tree, Audio Recorder, Photo Tags y Leaflet
+   ========================================================================== */
+
+/* Árbol D3 SVG */
+.d3-node circle {
+  fill: var(--card-bg);
+  stroke: var(--accent-color);
+  stroke-width: 3px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.d3-node circle:hover {
+  fill: var(--accent-color);
+  r: 28;
+}
+
+.d3-node text {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  fill: var(--text-primary);
+}
+
+.d3-node .d3-node-title {
+  font-weight: 700;
+}
+
+.d3-node .d3-node-sub {
+  fill: var(--text-secondary);
+  font-size: 10px;
+}
+
+.d3-link {
+  fill: none;
+  stroke: var(--border-color);
+  stroke-width: 2px;
+  transition: stroke 0.3s ease;
+}
+
+[data-theme="dark"] .d3-link {
+  stroke: rgba(245, 158, 11, 0.4);
+}
+
+/* Grabadora de Audio */
+.recording-active {
+  animation: pulseRecording 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseRecording {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Etiquetas de Personas en Foto (Slideshow Tagging) */
+.photo-tag-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.photo-tag-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(217, 119, 6, 0.9);
+  border: 2px solid #FFFFFF;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease;
+}
+
+.photo-tag-pin:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+  z-index: 100;
+}
+
+.photo-tag-label {
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid var(--accent-color);
+}
+
+/* Leaflet Map Custom Marker Styling */
+.leaflet-popup-content-wrapper {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+}
+
+.leaflet-popup-tip {
+  background-color: var(--card-bg) !important;
+}
+
