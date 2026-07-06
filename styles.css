@@ -1559,10 +1559,10 @@ a:hover {
    ========================================================================== */
 
 .idf-top-banner {
-  background: linear-gradient(135deg, #3B4B27 0%, #4D6030 50%, #2B371B 100%);
-  border: 1px solid #D97706;
-  border-left: 5px solid #F59E0B;
-  color: #FEF3C7;
+  background: linear-gradient(135deg, #3D4A26 0%, #556B2F 50%, #2A3618 100%); /* Olive Green */
+  border: 1px solid #C5A059; /* Gold */
+  border-left: 5px solid #D4AF37; /* Bright Gold */
+  color: #FFF4D4; /* Light Gold/Ivory */
   padding: 12px 20px;
   border-radius: 12px;
   margin-bottom: 24px;
@@ -1574,25 +1574,25 @@ a:hover {
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  box-shadow: 0 4px 14px rgba(43, 55, 27, 0.35), 0 0 12px rgba(217, 119, 6, 0.2);
+  box-shadow: 0 4px 14px rgba(45, 59, 27, 0.35), 0 0 12px rgba(197, 160, 89, 0.2);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .idf-top-banner:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(43, 55, 27, 0.45), 0 0 16px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 6px 18px rgba(45, 59, 27, 0.45), 0 0 16px rgba(212, 175, 55, 0.3);
 }
 
 .idf-top-banner i {
-  color: #F59E0B;
+  color: #D4AF37; /* Bright Gold */
   font-size: 1.1rem;
 }
 
 .idf-dedication-banner {
-  background: linear-gradient(135deg, #33421E 0%, #485C2C 100%);
-  border: 1px solid #D97706;
-  color: #FEF3C7;
+  background: linear-gradient(135deg, #323D1E 0%, #46562B 100%); /* Olive Green */
+  border: 1px solid #C5A059; /* Gold */
+  color: #FFF4D4; /* Light Gold/Ivory */
   padding: 8px 12px;
   border-radius: 8px;
   margin-top: 14px;
@@ -1610,7 +1610,7 @@ a:hover {
 }
 
 .idf-dedication-banner i {
-  color: #F59E0B;
+  color: #D4AF37; /* Bright Gold */
   font-size: 0.85rem;
 }
 
