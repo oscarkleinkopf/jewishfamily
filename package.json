@@ -7,9 +7,24 @@
   "scripts": {
     "dev": "npx http-server -p 8080",
     "backup": "node backup.js",
-    "watch": "node watch-backup.js"
+    "watch": "node watch-backup.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
-  "keywords": ["jewish", "family", "diary", "shorashim", "hebcal"],
+  "keywords": [
+    "jewish",
+    "family",
+    "diary",
+    "shorashim",
+    "hebcal"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^10.8.0",
+    "globals": "^17.8.0",
+    "prettier": "^3.9.6"
+  }
 }
