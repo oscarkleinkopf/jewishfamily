@@ -217,6 +217,12 @@ Si quieres colaborar:
 2. Mantener commits pequeños y descriptivos.
 3. Abrir PR con contexto funcional y evidencia de prueba manual.
 
+Guías y plantillas:
+
+- `CONTRIBUTING.md`
+- `.github/ISSUE_TEMPLATE/tarea-desarrollo.md`
+- `README-RESUMEN.md` (versión corta para referencia rápida)
+
 ---
 
 ## Licencia
