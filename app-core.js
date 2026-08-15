@@ -4,7 +4,10 @@
  */
 
 window.DorLdorCore = {
-  HEBREW_MONTHS_ES: {
+  HEBREW_MONTHS_ES:
+    (typeof globalThis !== 'undefined' &&
+      globalThis.DorLdorKernel &&
+      globalThis.DorLdorKernel.HEBREW_MONTHS_ES) || {
     Nisan: 'Nisán',
     Iyyar: 'Iyar',
     Sivan: 'Siván',

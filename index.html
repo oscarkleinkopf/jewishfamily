@@ -474,6 +474,10 @@
               <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;" id="zmanim-location-text">
                 Consultando Hebcal Zmanim...
               </p>
+              <label class="form-label" for="zmanim-city-select" style="margin-top: 10px; font-size: 0.75rem;">Ciudad</label>
+              <select id="zmanim-city-select" class="form-control" style="max-width: 280px; font-size: 0.85rem; padding: 6px 10px;">
+                <option value="BU">Buenos Aires, Argentina</option>
+              </select>
             </div>
             <div id="zmanim-times-display" style="display: flex; gap: 16px; font-size: 0.9rem; flex-wrap: wrap;">
               <!-- Dinámico por Hebcal API -->
@@ -519,6 +523,7 @@
         <div class="form-group">
           <label class="form-label" for="event-title-input">Título del Acontecimiento</label>
           <input type="text" id="event-title-input" class="form-control" required placeholder="Ej. Brit Milá de David">
+          <p class="form-error" data-error-for="title"></p>
         </div>
         
         <div class="form-row">
@@ -534,11 +539,13 @@
               <option value="Festividades">Festividades</option>
               <option value="Otros">Otros</option>
             </select>
+            <p class="form-error" data-error-for="category"></p>
           </div>
           
           <div class="form-group">
             <label class="form-label" for="event-date-input">Fecha (Gregoriana)</label>
             <input type="date" id="event-date-input" class="form-control" required>
+            <p class="form-error" data-error-for="date"></p>
           </div>
         </div>
 
@@ -557,6 +564,7 @@
         <div class="form-group">
           <label class="form-label" for="event-desc-input">Relato o Recuerdos Especiales</label>
           <textarea id="event-desc-input" class="form-control" rows="4" required placeholder="Describe los detalles de este acontecimiento, las emociones, quiénes asistieron..."></textarea>
+          <p class="form-error" data-error-for="description"></p>
         </div>
 
         <div class="form-group">
@@ -616,6 +624,7 @@
         <div class="form-group">
           <label class="form-label" for="member-name-input">Nombre Completo</label>
           <input type="text" id="member-name-input" class="form-control" required placeholder="Ej. Rajel Levy">
+          <p class="form-error" data-error-for="name"></p>
         </div>
 
         <div class="form-group">
@@ -635,11 +644,13 @@
               <option value="Primo">Primo / Prima</option>
               <option value="Otro">Otro</option>
             </select>
+            <p class="form-error" data-error-for="relationship"></p>
           </div>
           
           <div class="form-group">
             <label class="form-label" for="member-birth-input">Fecha de Nacimiento</label>
             <input type="date" id="member-birth-input" class="form-control" required>
+            <p class="form-error" data-error-for="birthDate"></p>
           </div>
         </div>
 
@@ -745,6 +756,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <!-- Scripts de la Aplicación Standalone -->
+  <script src="lib/calendar.js"></script>
+  <script src="lib/brajot.js"></script>
+  <script src="lib/reminders.js"></script>
+  <script src="lib/validation.js"></script>
   <script src="db.js"></script>
   <script src="sampleData.js"></script>
   <script src="app-core.js"></script>

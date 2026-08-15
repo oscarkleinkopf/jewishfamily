@@ -105,18 +105,48 @@ El proyecto está en una fase funcional temprana/intermedia:
 
 ```text
 .
-├── index.html          # Estructura principal de la app
-├── styles.css          # Estilos globales
-├── app.js              # Lógica principal de UI y flujos
-├── db.js               # Capa de acceso y utilidades IndexedDB
+├── index.html          # App completa
+├── lite.html           # Superficie simplificada (prueba de DorLdorLite.mount)
+├── lite.js             # Widget montable para Shabatin
+├── lite.css
+├── lib/                # Núcleo sin DOM (calendario, brajot, recordatorios, validación)
+├── app.js              # Lógica de UI de la app completa
+├── app-core.js         # Helpers de UI
+├── dom-cache.js        # Cache de elementos DOM
+├── db.js               # IndexedDB
 ├── sampleData.js       # Datos semilla
+├── tests/              # Tests del núcleo
 ├── sw.js               # Service Worker
-├── manifest.json       # Configuración PWA
-├── backup.js           # Script de respaldo manual
-├── watch-backup.js     # Observador de cambios para respaldo automático
-├── package.json        # Scripts de desarrollo
 └── README.md
 ```
+
+---
+
+## Versión lite (para Shabatin)
+
+La app completa sigue en `index.html`. La versión simplificada no depende de esos IDs de DOM.
+
+Abrir localmente: `http://localhost:8080/lite.html`
+
+Montaje en otra app (vanilla):
+
+```html
+<div id="dorldor-lite-root"></div>
+<script src="lib/calendar.js"></script>
+<script src="lib/brajot.js"></script>
+<script src="lib/reminders.js"></script>
+<script src="lib/validation.js"></script>
+<script src="lite.js"></script>
+<script>
+  DorLdorLite.mount('#dorldor-lite-root', {
+    city: 'BU',
+    theme: 'inherit',
+    features: ['zmanim', 'brajot', 'reminders', 'ics']
+  });
+</script>
+```
+
+Incluye zmanim (ciudad configurable), brajot de Shabat/familia, recordatorios e ICS. No incluye álbum, árbol, mapa ni wizard Shorashim.
 
 ---
 
@@ -157,6 +187,12 @@ http://localhost:8080
 
 - `npm run watch`  
   Observa cambios y dispara respaldos automáticos (`watch-backup.js`).
+
+- `npm test`  
+  Corre tests unitarios del núcleo (`lib/`) con el runner nativo de Node.
+
+- `npm run lint`  
+  Verifica JavaScript con ESLint.
 
 ---
 

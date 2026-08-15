@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dor L'Dor Lite</title>
+  <link rel="stylesheet" href="lite.css">
+</head>
+<body style="margin:0; background:#F7F5F0; padding:24px;">
+  <div id="dorldor-lite-root"></div>
+  <p style="max-width:720px; margin:16px auto 0; font: 0.85rem/1.4 Inter, system-ui, sans-serif; color:#4B5563;">
+    Esta página prueba <code>DorLdorLite.mount</code>. Shabatin puede cargar los mismos scripts y montar el widget en cualquier contenedor.
+  </p>
+
+  <script src="lib/calendar.js"></script>
+  <script src="lib/brajot.js"></script>
+  <script src="lib/reminders.js"></script>
+  <script src="lib/validation.js"></script>
+  <script src="lite.js"></script>
+  <script>
+    DorLdorLite.mount('#dorldor-lite-root', {
+      city: 'BU',
+      theme: 'inherit',
+      features: ['zmanim', 'brajot', 'reminders', 'ics'],
+      members: [
+        { id: 'demo-david', name: 'David Levy', relationship: 'Hijo', birthDate: '2013-06-18', hebrewBirthDate: '10 de Tamuz, 5773' }
+      ],
+      events: [
+        { id: 'demo-yahr', title: 'Yahrtzeit de Isaac', category: 'Yahrtzeit / Sepelio', date: '2020-01-15', hebrewDate: '18 de Tevet', location: 'Buenos Aires' }
+      ]
+    });
+  </script>
+</body>
+</html>

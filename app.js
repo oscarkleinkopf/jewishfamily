@@ -5,22 +5,8 @@
  */
 
 // --- Configuración compartida ---
-const HEBREW_MONTHS_ES = window.DorLdorCore?.HEBREW_MONTHS_ES || {
-  Nisan: 'Nisán',
-  Iyyar: 'Iyar',
-  Sivan: 'Siván',
-  Tamuz: 'Tamuz',
-  Av: 'Av',
-  Elul: 'Elul',
-  Tishrei: 'Tishrei',
-  Cheshvan: 'Jeshván',
-  Kislev: 'Kislev',
-  Tevet: 'Tevet',
-  Shvat: 'Shvat',
-  Adar: 'Adar',
-  'Adar I': 'Adar I',
-  'Adar II': 'Adar II'
-};
+const kernel = globalThis.DorLdorKernel || {};
+const HEBREW_MONTHS_ES = kernel.HEBREW_MONTHS_ES || window.DorLdorCore?.HEBREW_MONTHS_ES || {};
 
 // --- Variables de Estado Global ---
 let currentTheme = 'light';
@@ -59,6 +45,17 @@ const showToast = (message) => {
     dom.toast.classList.remove('show');
   }, 3000);
 };
+
+function showFormErrors(form, errors) {
+  if (!form) return;
+  form.querySelectorAll('[data-error-for]').forEach((el) => {
+    el.textContent = '';
+  });
+  Object.entries(errors || {}).forEach(([field, message]) => {
+    const slot = form.querySelector(`[data-error-for="${field}"]`);
+    if (slot) slot.textContent = message;
+  });
+}
 
 // --- Inicialización de la App ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -186,7 +183,7 @@ async function updateAllViews() {
   renderMigrationMap();
   renderBrajot(events);
   renderReminders(members, events);
-  fetchHebcalZmanim();
+  await fetchHebcalZmanim();
   
   populateFilterMemberSelect(members);
   populateTaggedMembersCheckboxes(members);
@@ -195,12 +192,14 @@ async function updateAllViews() {
 
 // --- API de Conversión Calendario Hebreo (Hebcal) ---
 async function fetchHebrewDate(gregorianDateString) {
+  if (kernel.fetchHebrewDate) {
+    return kernel.fetchHebrewDate(gregorianDateString);
+  }
   if (!gregorianDateString) return '';
   try {
     const response = await fetch(`https://www.hebcal.com/converter?cfg=json&date=${gregorianDateString}&g2h=1`);
     if (!response.ok) throw new Error();
     const data = await response.json();
-    
     const monthEs = HEBREW_MONTHS_ES[data.hm] || data.hm;
     return `${data.hd} de ${monthEs}, ${data.hy}`;
   } catch (e) {
@@ -312,6 +311,7 @@ function setupEventListeners() {
   // MODAL ACONTECIMIENTO (EVENTO)
   dom.addEventBtn.addEventListener('click', () => {
     dom.addEventForm.reset();
+    showFormErrors(dom.addEventForm, {});
     dom.eventIdInput.value = '';
     dom.eventHebDateInput.value = '';
     dom.eventModalTitle.innerText = 'Añadir Recuerdo';
@@ -337,6 +337,15 @@ function setupEventListeners() {
     const hebrewDate = dom.eventHebDateInput.value;
     const location = dom.eventLocationInput.value;
     const description = dom.eventDescInput.value;
+
+    const validation = kernel.validateEvent
+      ? kernel.validateEvent({ title, category, date, description })
+      : { ok: true, errors: {} };
+    showFormErrors(dom.addEventForm, validation.errors);
+    if (!validation.ok) {
+      showToast(Object.values(validation.errors)[0] || 'Revisa los datos del acontecimiento');
+      return;
+    }
     
     const taggedMembers = [];
     dom.eventTaggedCheckboxes.querySelectorAll('input:checked').forEach(cb => {
@@ -398,6 +407,7 @@ function setupEventListeners() {
   // MODAL FAMILIAR (MIEMBRO)
   dom.addMemberBtn.addEventListener('click', () => {
     dom.addMemberForm.reset();
+    showFormErrors(dom.addMemberForm, {});
     dom.memberIdInput.value = '';
     dom.memberHebBirthInput.value = '';
     dom.memberModalTitle.innerText = 'Añadir Miembro de la Familia';
@@ -422,6 +432,15 @@ function setupEventListeners() {
     const relationship = dom.memberRelationInput.value;
     const birthDate = dom.memberBirthInput.value;
     const hebrewBirthDate = dom.memberHebBirthInput.value;
+
+    const validation = kernel.validateMember
+      ? kernel.validateMember({ name, relationship, birthDate })
+      : { ok: true, errors: {} };
+    showFormErrors(dom.addMemberForm, validation.errors);
+    if (!validation.ok) {
+      showToast(Object.values(validation.errors)[0] || 'Revisa los datos del familiar');
+      return;
+    }
     
     let avatar = null;
     const photoFile = dom.memberPhotoInput.files[0];
@@ -503,6 +522,11 @@ function setupEventListeners() {
     const members = await getMembers();
     const events = await getEvents();
     exportRemindersToICS(members, events);
+  });
+
+  document.getElementById('zmanim-city-select')?.addEventListener('change', async (event) => {
+    await saveSetting('zmanim_city', event.target.value);
+    await fetchHebcalZmanim();
   });
 
   document.getElementById('tree-view-d3-btn')?.addEventListener('click', () => {
@@ -1081,9 +1105,12 @@ function launchGenealogySearch(site) {
 function renderBrajot(events, filterCategory = 'all') {
   dom.brajotContainer.innerHTML = '';
 
-  const filteredBrajot = filterCategory === 'all'
-    ? BRAJOT_DATABASE
-    : BRAJOT_DATABASE.filter(b => b.category === filterCategory);
+  const catalog = kernel.BRAJOT_DATABASE || BRAJOT_DATABASE;
+  const filteredBrajot = kernel.filterBrajot
+    ? kernel.filterBrajot(filterCategory, catalog)
+    : filterCategory === 'all'
+      ? catalog
+      : catalog.filter(b => b.category === filterCategory);
 
   filteredBrajot.forEach(braja => {
     const card = document.createElement('article');
@@ -1110,7 +1137,9 @@ function renderBrajot(events, filterCategory = 'all') {
     `;
 
     card.querySelector('.copy-braja-btn').addEventListener('click', () => {
-      const textToCopy = `${braja.title}\n\nHebreo:\n${braja.hebrew}\n\nFonetica:\n${braja.transliteration}\n\nTraduccion:\n${braja.translation}`;
+      const textToCopy = kernel.formatBrajaCopyText
+        ? kernel.formatBrajaCopyText(braja)
+        : `${braja.title}\n\nHebreo:\n${braja.hebrew}\n\nFonetica:\n${braja.transliteration}\n\nTraduccion:\n${braja.translation}`;
       navigator.clipboard.writeText(textToCopy);
       showToast('Bendición copiada al portapapeles');
     });
@@ -1139,44 +1168,36 @@ function renderReminders(members, events) {
   dom.birthdayContainer.innerHTML = '';
   dom.yahrtzeitContainer.innerHTML = '';
 
-  if (members.length === 0) {
+  const reminders = kernel.getUpcomingReminders
+    ? kernel.getUpcomingReminders(members, events)
+    : { birthdays: [], yahrtzeits: [] };
+
+  if (!members.length) {
     dom.birthdayContainer.innerHTML = '<p style="color: var(--text-secondary);">No hay familiares registrados.</p>';
     dom.yahrtzeitContainer.innerHTML = '<p style="color: var(--text-secondary);">No hay familiares registrados.</p>';
     return;
   }
 
-  const sortedBirthdays = [...members].sort((a, b) => {
-    const dateA = new Date(a.birthDate);
-    const dateB = new Date(b.birthDate);
-    return (dateA.getMonth() - dateB.getMonth()) || (dateA.getDate() - dateB.getDate());
-  });
-
-  sortedBirthdays.forEach(m => {
-    const birth = new Date(m.birthDate);
-    const month = birth.toLocaleString('es-ES', { month: 'short' });
-    const day = birth.getDate();
-
-    const item = document.createElement('div');
-    item.className = 'reminder-item';
-    item.innerHTML = `
+  reminders.birthdays.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'reminder-item';
+    row.innerHTML = `
       <div class="reminder-date-badge">
-        ${day}
-        <span>${month}</span>
+        ${item.day}
+        <span>${item.monthLabel}</span>
       </div>
       <div class="reminder-info">
-        <h4 class="reminder-title">Cumpleaños de ${m.name}</h4>
+        <h4 class="reminder-title">${item.title}</h4>
         <p class="reminder-desc">
-          Parentesco: <strong>${m.relationship}</strong> | Nac: ${m.birthDate}
-          ${m.hebrewBirthDate ? `<br>Hebreo: <span class="heb">${m.hebrewBirthDate}</span>` : ''}
+          Parentesco: <strong>${item.relationship}</strong> | Nac: ${item.date}
+          ${item.hebrewDate ? `<br>Hebreo: <span class="heb">${item.hebrewDate}</span>` : ''}
         </p>
       </div>
     `;
-    dom.birthdayContainer.appendChild(item);
+    dom.birthdayContainer.appendChild(row);
   });
 
-  const yahrtzeitEvents = events.filter(e => e.category === 'Yahrtzeit / Sepelio');
-
-  if (yahrtzeitEvents.length === 0) {
+  if (reminders.yahrtzeits.length === 0) {
     dom.yahrtzeitContainer.innerHTML = `
       <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
         <i class="fa-regular fa-lightbulb" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
@@ -1186,28 +1207,24 @@ function renderReminders(members, events) {
     return;
   }
 
-  yahrtzeitEvents.forEach(e => {
-    const date = new Date(e.date);
-    const month = date.toLocaleString('es-ES', { month: 'short' });
-    const day = date.getDate();
-
-    const item = document.createElement('div');
-    item.className = 'reminder-item';
-    item.style.borderLeftColor = 'var(--text-secondary)';
-    item.innerHTML = `
+  reminders.yahrtzeits.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'reminder-item';
+    row.style.borderLeftColor = 'var(--text-secondary)';
+    row.innerHTML = `
       <div class="reminder-date-badge" style="color: var(--text-secondary);">
-        ${day}
-        <span>${month}</span>
+        ${item.day}
+        <span>${item.monthLabel}</span>
       </div>
       <div class="reminder-info">
-        <h4 class="reminder-title">${e.title}</h4>
+        <h4 class="reminder-title">${item.title}</h4>
         <p class="reminder-desc">
-          Gregoriano: <strong>${e.date}</strong> | Lugar: ${e.location || 'No indicado'}
-          ${e.hebrewDate ? `<br>Hebreo (Yahrtzeit anual): <span class="heb">${e.hebrewDate}</span>` : ''}
+          Gregoriano: <strong>${item.date}</strong> | Lugar: ${item.location || 'No indicado'}
+          ${item.hebrewDate ? `<br>Hebreo (Yahrtzeit anual): <span class="heb">${item.hebrewDate}</span>` : ''}
         </p>
       </div>
     `;
-    dom.yahrtzeitContainer.appendChild(item);
+    dom.yahrtzeitContainer.appendChild(row);
   });
 }
 
@@ -1570,61 +1587,56 @@ function setupPhotoTagging(members) {
 }
 
 // 7. Zmanim & Calendario Exportación .ics
+async function getSelectedZmanimCity() {
+  const saved = await getSetting('zmanim_city');
+  return saved || kernel.DEFAULT_ZMANIM_CITY || 'BU';
+}
+
+function populateZmanimCitySelect(selectedCity) {
+  const select = document.getElementById('zmanim-city-select');
+  if (!select || !kernel.ZMANIM_CITIES) return;
+  select.innerHTML = kernel.ZMANIM_CITIES.map((city) => (
+    `<option value="${city.code}" ${city.code === selectedCity ? 'selected' : ''}>${city.label}</option>`
+  )).join('');
+}
+
 async function fetchHebcalZmanim() {
   const zmanimDisplay = document.getElementById('zmanim-times-display');
   const locationText = document.getElementById('zmanim-location-text');
   if (!zmanimDisplay) return;
 
-  try {
-    const response = await fetch('https://www.hebcal.com/zmanim?cfg=json&city=BU&g2h=1');
-    if (!response.ok) throw new Error();
-    const data = await response.json();
+  const city = await getSelectedZmanimCity();
+  populateZmanimCitySelect(city);
 
-    locationText.innerText = 'Buenos Aires, Argentina (Hebcal Zmanim)';
-    if (data.times) {
-      const candles = data.times.candles ? data.times.candles.slice(11, 16) : '18:15';
-      const havdalah = data.times.havdalah ? data.times.havdalah.slice(11, 16) : '19:10';
-      zmanimDisplay.innerHTML = `
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${candles}</div>
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${havdalah}</div>
-      `;
-    }
-  } catch (e) {
-    locationText.innerText = 'Horarios de Shabat estimados';
-    zmanimDisplay.innerHTML = `
-      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Velas:</strong> 18:15</div>
-      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> 19:10</div>
-    `;
-  }
+  const result = kernel.fetchZmanim
+    ? await kernel.fetchZmanim({ city })
+    : { ok: false, candles: '18:15', havdalah: '19:10', locationLabel: 'Horarios de Shabat estimados' };
+
+  locationText.innerText = result.locationLabel;
+  zmanimDisplay.innerHTML = `
+    <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${result.candles}</div>
+    <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${result.havdalah}</div>
+  `;
 }
 
-function exportRemindersToICS(members, events) {
-  let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Dor LDor Family Journal//ES\r\n";
-
-  members.forEach(m => {
-    if (m.birthDate) {
-      const year = new Date().getFullYear();
-      const dt = m.birthDate.replace(/-/g, '');
-      icsContent += "BEGIN:VEVENT\r\n";
-      icsContent += `SUMMARY:Cumpleaños de ${m.name} (${m.hebrewBirthDate || ''})\r\n`;
-      icsContent += `DESCRIPTION:Cumpleaños familiar - ${m.relationship}\r\n`;
-      icsContent += `DTSTART;VALUE=DATE:${year}${dt.slice(4)}\r\n`;
-      icsContent += "RRULE:FREQ=YEARLY\r\n";
-      icsContent += "END:VEVENT\r\n";
-    }
-  });
-
-  icsContent += "END:VCALENDAR\r\n";
-
-  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+function downloadTextFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `aniversarios_familia_dorldor.ics`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function exportRemindersToICS(members, events) {
+  const icsContent = kernel.buildIcsCalendar
+    ? kernel.buildIcsCalendar({ members, events })
+    : 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n';
+
+  downloadTextFile('aniversarios_familia_dorldor.ics', icsContent, 'text/calendar;charset=utf-8');
   showToast('Archivo de calendario .ics descargado');
 }
 

@@ -27,6 +27,8 @@ npm run dev
 
 Abrir: `http://localhost:8080`
 
+Versión lite (widget para Shabatin): `http://localhost:8080/lite.html`
+
 ## Estado actual
 
 Proyecto funcional en fase temprana/intermedia.  
