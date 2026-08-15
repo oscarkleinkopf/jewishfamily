@@ -5,6 +5,7 @@ import '../lib/calendar.js';
 import '../lib/brajot.js';
 import '../lib/reminders.js';
 import '../lib/validation.js';
+import '../lib/family-tree.js';
 
 const kernel = globalThis.DorLdorKernel;
 
@@ -91,4 +92,23 @@ test('getLiteBrajot solo incluye categorías de Shabat y familia', () => {
 test('formatHebrewDateFromHebcal traduce el mes', () => {
   const formatted = kernel.formatHebrewDateFromHebcal({ hd: 10, hm: 'Tamuz', hy: 5773 });
   assert.equal(formatted, '10 de Tamuz, 5773');
+});
+
+test('buildFamilyTree agrupa generaciones reales y nombra la familia', () => {
+  const tree = kernel.buildFamilyTree([
+    { id: 'g', name: 'Abraham Levy', relationship: 'Abuelo', hebrewName: 'Avraham' },
+    { id: 'p', name: 'Moisés Levy', relationship: 'Padre' },
+    { id: 'c', name: 'David Levy', relationship: 'Hijo' }
+  ]);
+  assert.equal(tree.name, 'Familia Levy');
+  assert.equal(tree.children.length, 3);
+  assert.equal(tree.children[0].name, 'Abuelos');
+  assert.equal(tree.children[0].children[0].name, 'Abraham Levy');
+  assert.equal(tree.children[2].children[0].relationship, 'Hijo');
+});
+
+test('buildFamilyTree sin miembros deja la raíz vacía', () => {
+  const tree = kernel.buildFamilyTree([]);
+  assert.equal(tree.name, 'Familia');
+  assert.deepEqual(tree.children, []);
 });

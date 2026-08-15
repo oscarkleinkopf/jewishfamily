@@ -19,6 +19,7 @@ export default [
         DorLdorLite: 'writable',
         DorLdorCore: 'writable',
         DorLdorDom: 'writable',
+        DorLdorDb: 'writable',
         L: 'readonly',
         d3: 'readonly',
         html2pdf: 'readonly',

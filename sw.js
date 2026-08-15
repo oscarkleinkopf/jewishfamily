@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dorldor-v2';
+const CACHE_NAME = 'dorldor-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const ASSETS_TO_CACHE = [
   './lib/brajot.js',
   './lib/reminders.js',
   './lib/validation.js',
+  './lib/family-tree.js',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',

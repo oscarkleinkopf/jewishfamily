@@ -9,13 +9,24 @@ const DB_VERSION = 1;
 
 let dbInstance = null;
 
+function getDbName() {
+  return (typeof globalThis !== 'undefined' && globalThis.DORLDOR_DB_NAME) || DB_NAME;
+}
+
+function resetDbInstance() {
+  if (dbInstance) {
+    dbInstance.close();
+    dbInstance = null;
+  }
+}
+
 function initDB() {
   return new Promise((resolve, reject) => {
     if (dbInstance) {
       return resolve(dbInstance);
     }
 
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(getDbName(), DB_VERSION);
 
     request.onerror = (event) => {
       console.error('Error al abrir la base de datos:', event.target.error);
@@ -189,6 +200,19 @@ function blobToBase64(blob) {
     if (!(blob instanceof Blob)) {
       return resolve(blob);
     }
+    if (typeof FileReader === 'undefined') {
+      blob.arrayBuffer()
+        .then((buffer) => {
+          const base64 = Buffer.from(buffer).toString('base64');
+          resolve({
+            isBlob: true,
+            type: blob.type,
+            data: `data:${blob.type || 'application/octet-stream'};base64,${base64}`
+          });
+        })
+        .catch(reject);
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => resolve({
       isBlob: true,
@@ -224,10 +248,23 @@ function base64ToBlob(blobInfo) {
   return new Blob(byteArrays, { type: contentType });
 }
 
+async function getAllSettings() {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('settings', 'readonly');
+    const store = transaction.objectStore('settings');
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
 async function exportDatabase() {
   const members = await getMembers();
   const events = await getEvents();
   const shorashim = await getShorashimProject();
+  const settings = await getAllSettings();
   
   const serializedMembers = await Promise.all(members.map(async (m) => {
     const memberCopy = { ...m };
@@ -266,6 +303,7 @@ async function exportDatabase() {
     members: serializedMembers,
     events: serializedEvents,
     shorashim: serializedShorashim,
+    settings,
     exportedAt: new Date().toISOString()
   });
 }
@@ -276,7 +314,7 @@ async function importDatabase(jsonString) {
 
   await clearAllData();
 
-  const transaction = db.transaction(['members', 'events', 'shorashim'], 'readwrite');
+  const transaction = db.transaction(['members', 'events', 'shorashim', 'settings'], 'readwrite');
   
   if (data.members && Array.isArray(data.members)) {
     const memberStore = transaction.objectStore('members');
@@ -317,6 +355,15 @@ async function importDatabase(jsonString) {
     shorashimStore.put(sh);
   }
 
+  if (data.settings && Array.isArray(data.settings)) {
+    const settingsStore = transaction.objectStore('settings');
+    for (const setting of data.settings) {
+      if (setting && setting.key) {
+        settingsStore.put(setting);
+      }
+    }
+  }
+
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve(true);
     transaction.onerror = () => reject(transaction.error);
@@ -334,4 +381,30 @@ async function clearAllData() {
     transaction.oncomplete = () => resolve(true);
     transaction.onerror = () => reject(transaction.error);
   });
+}
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.DorLdorDb = {
+    DB_NAME,
+    DB_VERSION,
+    getDbName,
+    resetDbInstance,
+    initDB,
+    getMembers,
+    saveMember,
+    deleteMember,
+    getEvents,
+    saveEvent,
+    deleteEvent,
+    getShorashimProject,
+    saveShorashimProject,
+    getSetting,
+    saveSetting,
+    getAllSettings,
+    blobToBase64,
+    base64ToBlob,
+    exportDatabase,
+    importDatabase,
+    clearAllData
+  };
 }

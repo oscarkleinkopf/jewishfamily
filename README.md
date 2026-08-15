@@ -109,7 +109,7 @@ El proyecto está en una fase funcional temprana/intermedia:
 ├── lite.html           # Superficie simplificada (prueba de DorLdorLite.mount)
 ├── lite.js             # Widget montable para Shabatin
 ├── lite.css
-├── lib/                # Núcleo sin DOM (calendario, brajot, recordatorios, validación)
+├── lib/                # Núcleo sin DOM (calendario, brajot, recordatorios, validación, árbol)
 ├── app.js              # Lógica de UI de la app completa
 ├── app-core.js         # Helpers de UI
 ├── dom-cache.js        # Cache de elementos DOM

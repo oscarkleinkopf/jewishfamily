@@ -356,10 +356,11 @@ function setupEventListeners() {
     
     const photoFile = dom.eventPhotoInput.files[0];
     if (photoFile) {
+      const compressedPhoto = await compressImage(photoFile);
       media.push({
         id: 'media-' + Date.now() + '-photo',
         type: 'image',
-        blob: photoFile,
+        blob: compressedPhoto,
         name: photoFile.name
       });
     }
@@ -445,7 +446,7 @@ function setupEventListeners() {
     let avatar = null;
     const photoFile = dom.memberPhotoInput.files[0];
     if (photoFile) {
-      avatar = photoFile;
+      avatar = await compressImage(photoFile);
     } else if (dom.memberIdInput.value) {
       const allMembers = await getMembers();
       const oldM = allMembers.find(m => m.id === dom.memberIdInput.value);
@@ -1464,41 +1465,19 @@ function renderD3Tree(members) {
 
   const width = svgEl.node().clientWidth || 800;
   const height = 520;
+  const rootData = kernel.buildFamilyTree
+    ? kernel.buildFamilyTree(members)
+    : { name: 'Familia', relationship: 'Familia', children: [] };
 
-  const rootData = {
-    name: 'Familia Levy',
-    relationship: 'Familia',
-    children: [
-      {
-        name: 'Abraham Levy',
-        hebrewName: 'Avraham ben Moshe',
-        relationship: 'Abuelo',
-        children: [
-          {
-            name: 'Moisés Levy',
-            hebrewName: 'Moshe ben Avraham',
-            relationship: 'Padre',
-            children: [
-              { name: 'David Levy', hebrewName: 'David ben Moshe', relationship: 'Hijo' },
-              { name: 'Miriam Levy', hebrewName: 'Miriam bat Moshe', relationship: 'Hija' }
-            ]
-          }
-        ]
-      },
-      {
-        name: 'Sara Stern',
-        hebrewName: 'Sara bat Yitzchak',
-        relationship: 'Abuela',
-        children: [
-          {
-            name: 'Rajel Stern',
-            hebrewName: 'Rajel bat Yitzchak',
-            relationship: 'Madre'
-          }
-        ]
-      }
-    ]
-  };
+  if (!rootData.children || rootData.children.length === 0) {
+    svgEl.append('text')
+      .attr('x', width / 2)
+      .attr('y', height / 2)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'currentColor')
+      .text('No hay familiares registrados para armar el árbol.');
+    return;
+  }
 
   const hierarchyRoot = d3.hierarchy(rootData);
   const treeLayout = d3.tree().size([width - 120, height - 140]);
@@ -1539,9 +1518,13 @@ function renderD3Tree(members) {
     .attr('text-anchor', 'middle')
     .text(d => `${d.data.relationship}${d.data.hebrewName ? ' (' + d.data.hebrewName + ')' : ''}`);
 
-  document.getElementById('d3-zoom-in')?.addEventListener('click', () => svgEl.transition().call(zoom.scaleBy, 1.3));
-  document.getElementById('d3-zoom-out')?.addEventListener('click', () => svgEl.transition().call(zoom.scaleBy, 0.7));
-  document.getElementById('d3-zoom-reset')?.addEventListener('click', () => svgEl.transition().call(zoom.transform, d3.zoomIdentity.translate(60, 60)));
+  const bindZoomButton = (id, handler) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.onclick = handler;
+  };
+  bindZoomButton('d3-zoom-in', () => svgEl.transition().call(zoom.scaleBy, 1.3));
+  bindZoomButton('d3-zoom-out', () => svgEl.transition().call(zoom.scaleBy, 0.7));
+  bindZoomButton('d3-zoom-reset', () => svgEl.transition().call(zoom.transform, d3.zoomIdentity.translate(60, 60)));
 }
 
 // 6. Etiquetado de Personas en Fotos (Slideshow Photo Tagging)
