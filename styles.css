@@ -350,6 +350,13 @@ a:hover {
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
 }
 
+.form-error {
+  min-height: 1.1em;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #DC2626;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

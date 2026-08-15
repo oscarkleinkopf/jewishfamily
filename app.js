@@ -4,23 +4,9 @@
  * Diseñado para ejecución sin necesidad de servidor local (CORS-free standalone script).
  */
 
-// --- Diccionario de traducción de meses hebreos ---
-const HEBREW_MONTHS_ES = {
-  'Nisan': 'Nisán',
-  'Iyyar': 'Iyar',
-  'Sivan': 'Siván',
-  'Tamuz': 'Tamuz',
-  'Av': 'Av',
-  'Elul': 'Elul',
-  'Tishrei': 'Tishrei',
-  'Cheshvan': 'Jeshván',
-  'Kislev': 'Kislev',
-  'Tevet': 'Tevet',
-  'Shvat': 'Shvat',
-  'Adar': 'Adar',
-  'Adar I': 'Adar I',
-  'Adar II': 'Adar II'
-};
+// --- Configuración compartida ---
+const kernel = globalThis.DorLdorKernel || {};
+const HEBREW_MONTHS_ES = kernel.HEBREW_MONTHS_ES || window.DorLdorCore?.HEBREW_MONTHS_ES || {};
 
 // --- Variables de Estado Global ---
 let currentTheme = 'light';
@@ -30,127 +16,46 @@ let currentSlideshowIndex = 0;
 let slideshowMediaList = []; // { title, desc, url, type }
 
 // --- Cache de Elementos del DOM ---
-const dom = {
-  // Navegación
-  sidebar: document.getElementById('sidebar-nav'),
-  menuToggleBtn: document.getElementById('menu-toggle-btn'),
-  navLinks: document.querySelectorAll('.sidebar-link'),
-  viewSections: document.querySelectorAll('.view-section'),
-  themeToggleBtn: document.getElementById('theme-toggle-btn'),
-  
-  // Respaldo
-  exportBtn: document.getElementById('export-db-btn'),
-  importBtn: document.getElementById('import-db-trigger'),
-  importFile: document.getElementById('import-db-file'),
-  clearBtn: document.getElementById('clear-db-btn'),
-  
-  // Línea de Tiempo
-  addEventBtn: document.getElementById('add-event-btn'),
-  timelineContainer: document.getElementById('timeline-events-container'),
-  searchEventsInput: document.getElementById('search-events-input'),
-  filterMemberSelect: document.getElementById('filter-member-select'),
-  categoryPills: document.querySelectorAll('#category-pills-container .category-pill'),
-  
-  // Álbum
-  galleryContainer: document.getElementById('gallery-container'),
-  
-  // Familia
-  addMemberBtn: document.getElementById('add-member-btn'),
-  familyMembersContainer: document.getElementById('family-members-container'),
-  treeLevelGrandparents: document.getElementById('tree-level-grandparents'),
-  treeLevelParents: document.getElementById('tree-level-parents'),
-  treeLevelChildren: document.getElementById('tree-level-children'),
-  
-  // Shorashim
-  shorashimEditor: document.getElementById('shorashim-editor-wizard'),
-  shorashimBooklet: document.getElementById('shorashim-booklet-preview'),
-  shorashimToggleViewBtn: document.getElementById('shorashim-toggle-view-btn'),
-  printShorashimBtn: document.getElementById('print-shorashim-btn'),
-  wizardSteps: document.querySelectorAll('.wizard-step-indicator'),
-  wizardStepContents: document.querySelectorAll('.wizard-step-content'),
-  wizardPrevBtn: document.getElementById('wizard-prev-btn'),
-  wizardNextBtn: document.getElementById('wizard-next-btn'),
-  
-  // Inputs Shorashim
-  shChildName: document.getElementById('sh-child-name'),
-  shChildHebName: document.getElementById('sh-child-heb-name'),
-  shChildNamedAfter: document.getElementById('sh-child-named-after'),
-  shChildBio: document.getElementById('sh-child-bio'),
-  shParentsStory: document.getElementById('sh-parents-story'),
-  shSiblingsInfo: document.getElementById('sh-siblings-info'),
-  shGrandparentsStory: document.getElementById('sh-grandparents-story'),
-  shTraditionsShabat: document.getElementById('sh-traditions-shabat'),
-  shRecipes: document.getElementById('sh-recipes'),
-  shObjects: document.getElementById('sh-objects'),
-  
-  // Buscador Genealógico
-  genSearchName: document.getElementById('gen-search-name'),
-  genSearchYear: document.getElementById('gen-search-year'),
-  genSearchCountry: document.getElementById('gen-search-country'),
-  searchMyHeritageBtn: document.getElementById('search-myheritage-btn'),
-  searchGeniBtn: document.getElementById('search-geni-btn'),
-  searchFamilySearchBtn: document.getElementById('search-familysearch-btn'),
-  
-  // Brajot
-  brajotContainer: document.getElementById('brajot-container'),
-  brajotCategoryPills: document.querySelectorAll('#brajot-category-pills .category-pill'),
-  
-  // Recordatorios
-  birthdayContainer: document.getElementById('birthday-reminders-container'),
-  yahrtzeitContainer: document.getElementById('yahrtzeit-reminders-container'),
-  
-  // Modales
-  modalAddEvent: document.getElementById('modal-add-event'),
-  modalAddMember: document.getElementById('modal-add-member'),
-  modalSlideshow: document.getElementById('modal-slideshow'),
-  modalLinkBraja: document.getElementById('modal-link-braja'),
-  
-  // Formularios e inputs
-  addEventForm: document.getElementById('add-event-form'),
-  eventIdInput: document.getElementById('event-id-input'),
-  eventTitleInput: document.getElementById('event-title-input'),
-  eventCategoryInput: document.getElementById('event-category-input'),
-  eventDateInput: document.getElementById('event-date-input'),
-  eventHebDateInput: document.getElementById('event-heb-date-input'),
-  eventLocationInput: document.getElementById('event-location-input'),
-  eventDescInput: document.getElementById('event-desc-input'),
-  eventTaggedCheckboxes: document.getElementById('event-tagged-members-checkboxes'),
-  eventPhotoInput: document.getElementById('event-photo-input'),
-  eventVideoInput: document.getElementById('event-video-input'),
-  closeEventModalBtn: document.getElementById('close-event-modal-btn'),
-  cancelEventModalBtn: document.getElementById('cancel-event-modal-btn'),
-  
-  addMemberForm: document.getElementById('add-member-form'),
-  memberIdInput: document.getElementById('member-id-input'),
-  memberNameInput: document.getElementById('member-name-input'),
-  memberHebNameInput: document.getElementById('member-heb-name-input'),
-  memberRelationInput: document.getElementById('member-relation-input'),
-  memberBirthInput: document.getElementById('member-birth-input'),
-  memberHebBirthInput: document.getElementById('member-heb-birth-input'),
-  memberPhotoInput: document.getElementById('member-photo-input'),
-  closeMemberModalBtn: document.getElementById('close-member-modal-btn'),
-  cancelMemberModalBtn: document.getElementById('cancel-member-modal-btn'),
-  
-  // Slideshow
-  slideshowMediaContainer: document.getElementById('slideshow-media-container'),
-  slideshowCaptionTitle: document.getElementById('slideshow-caption-title'),
-  slideshowCaptionDesc: document.getElementById('slideshow-caption-desc'),
-  slideshowPrevBtn: document.getElementById('slideshow-prev-btn'),
-  slideshowNextBtn: document.getElementById('slideshow-next-btn'),
-  closeSlideshowBtn: document.getElementById('close-slideshow-btn'),
-  
-  // Vincular Brajá
-  linkBrajaForm: document.getElementById('link-braja-form'),
-  linkBrajaIdInput: document.getElementById('link-braja-id-input'),
-  linkBrajaTitleDisplay: document.getElementById('link-braja-title-display'),
-  linkBrajaEventSelect: document.getElementById('link-braja-event-select'),
-  closeLinkBrajaBtn: document.getElementById('close-link-braja-btn'),
-  cancelLinkBrajaBtn: document.getElementById('cancel-link-braja-btn'),
-  
-  // Toast
-  toast: document.getElementById('toast-notify'),
-  toastMessage: document.getElementById('toast-message')
+const dom = window.DorLdorDom;
+
+const openModal = (modalEl) => {
+  if (window.DorLdorCore?.openModal) {
+    window.DorLdorCore.openModal(modalEl);
+    return;
+  }
+  modalEl.classList.add('show');
 };
+
+const closeModal = (modalEl) => {
+  if (window.DorLdorCore?.closeModal) {
+    window.DorLdorCore.closeModal(modalEl);
+    return;
+  }
+  modalEl.classList.remove('show');
+};
+
+const showToast = (message) => {
+  if (window.DorLdorCore?.showToast) {
+    window.DorLdorCore.showToast(dom, message);
+    return;
+  }
+  dom.toastMessage.innerText = message;
+  dom.toast.classList.add('show');
+  setTimeout(() => {
+    dom.toast.classList.remove('show');
+  }, 3000);
+};
+
+function showFormErrors(form, errors) {
+  if (!form) return;
+  form.querySelectorAll('[data-error-for]').forEach((el) => {
+    el.textContent = '';
+  });
+  Object.entries(errors || {}).forEach(([field, message]) => {
+    const slot = form.querySelector(`[data-error-for="${field}"]`);
+    if (slot) slot.textContent = message;
+  });
+}
 
 // --- Inicialización de la App ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -278,7 +183,7 @@ async function updateAllViews() {
   renderMigrationMap();
   renderBrajot(events);
   renderReminders(members, events);
-  fetchHebcalZmanim();
+  await fetchHebcalZmanim();
   
   populateFilterMemberSelect(members);
   populateTaggedMembersCheckboxes(members);
@@ -287,12 +192,14 @@ async function updateAllViews() {
 
 // --- API de Conversión Calendario Hebreo (Hebcal) ---
 async function fetchHebrewDate(gregorianDateString) {
+  if (kernel.fetchHebrewDate) {
+    return kernel.fetchHebrewDate(gregorianDateString);
+  }
   if (!gregorianDateString) return '';
   try {
     const response = await fetch(`https://www.hebcal.com/converter?cfg=json&date=${gregorianDateString}&g2h=1`);
     if (!response.ok) throw new Error();
     const data = await response.json();
-    
     const monthEs = HEBREW_MONTHS_ES[data.hm] || data.hm;
     return `${data.hd} de ${monthEs}, ${data.hy}`;
   } catch (e) {
@@ -404,6 +311,7 @@ function setupEventListeners() {
   // MODAL ACONTECIMIENTO (EVENTO)
   dom.addEventBtn.addEventListener('click', () => {
     dom.addEventForm.reset();
+    showFormErrors(dom.addEventForm, {});
     dom.eventIdInput.value = '';
     dom.eventHebDateInput.value = '';
     dom.eventModalTitle.innerText = 'Añadir Recuerdo';
@@ -429,6 +337,15 @@ function setupEventListeners() {
     const hebrewDate = dom.eventHebDateInput.value;
     const location = dom.eventLocationInput.value;
     const description = dom.eventDescInput.value;
+
+    const validation = kernel.validateEvent
+      ? kernel.validateEvent({ title, category, date, description })
+      : { ok: true, errors: {} };
+    showFormErrors(dom.addEventForm, validation.errors);
+    if (!validation.ok) {
+      showToast(Object.values(validation.errors)[0] || 'Revisa los datos del acontecimiento');
+      return;
+    }
     
     const taggedMembers = [];
     dom.eventTaggedCheckboxes.querySelectorAll('input:checked').forEach(cb => {
@@ -490,6 +407,7 @@ function setupEventListeners() {
   // MODAL FAMILIAR (MIEMBRO)
   dom.addMemberBtn.addEventListener('click', () => {
     dom.addMemberForm.reset();
+    showFormErrors(dom.addMemberForm, {});
     dom.memberIdInput.value = '';
     dom.memberHebBirthInput.value = '';
     dom.memberModalTitle.innerText = 'Añadir Miembro de la Familia';
@@ -514,6 +432,15 @@ function setupEventListeners() {
     const relationship = dom.memberRelationInput.value;
     const birthDate = dom.memberBirthInput.value;
     const hebrewBirthDate = dom.memberHebBirthInput.value;
+
+    const validation = kernel.validateMember
+      ? kernel.validateMember({ name, relationship, birthDate })
+      : { ok: true, errors: {} };
+    showFormErrors(dom.addMemberForm, validation.errors);
+    if (!validation.ok) {
+      showToast(Object.values(validation.errors)[0] || 'Revisa los datos del familiar');
+      return;
+    }
     
     let avatar = null;
     const photoFile = dom.memberPhotoInput.files[0];
@@ -595,6 +522,11 @@ function setupEventListeners() {
     const members = await getMembers();
     const events = await getEvents();
     exportRemindersToICS(members, events);
+  });
+
+  document.getElementById('zmanim-city-select')?.addEventListener('change', async (event) => {
+    await saveSetting('zmanim_city', event.target.value);
+    await fetchHebcalZmanim();
   });
 
   document.getElementById('tree-view-d3-btn')?.addEventListener('click', () => {
@@ -697,23 +629,6 @@ function setupEventListeners() {
       closeModal(e.target);
     }
   });
-}
-
-// --- Operaciones de Modales ---
-function openModal(modalEl) {
-  modalEl.classList.add('show');
-}
-
-function closeModal(modalEl) {
-  modalEl.classList.remove('show');
-}
-
-function showToast(message) {
-  dom.toastMessage.innerText = message;
-  dom.toast.classList.add('show');
-  setTimeout(() => {
-    dom.toast.classList.remove('show');
-  }, 3000);
 }
 
 // --- RENDERIZADORES ---
@@ -1190,9 +1105,12 @@ function launchGenealogySearch(site) {
 function renderBrajot(events, filterCategory = 'all') {
   dom.brajotContainer.innerHTML = '';
 
-  const filteredBrajot = filterCategory === 'all'
-    ? BRAJOT_DATABASE
-    : BRAJOT_DATABASE.filter(b => b.category === filterCategory);
+  const catalog = kernel.BRAJOT_DATABASE || BRAJOT_DATABASE;
+  const filteredBrajot = kernel.filterBrajot
+    ? kernel.filterBrajot(filterCategory, catalog)
+    : filterCategory === 'all'
+      ? catalog
+      : catalog.filter(b => b.category === filterCategory);
 
   filteredBrajot.forEach(braja => {
     const card = document.createElement('article');
@@ -1219,7 +1137,9 @@ function renderBrajot(events, filterCategory = 'all') {
     `;
 
     card.querySelector('.copy-braja-btn').addEventListener('click', () => {
-      const textToCopy = `${braja.title}\n\nHebreo:\n${braja.hebrew}\n\nFonetica:\n${braja.transliteration}\n\nTraduccion:\n${braja.translation}`;
+      const textToCopy = kernel.formatBrajaCopyText
+        ? kernel.formatBrajaCopyText(braja)
+        : `${braja.title}\n\nHebreo:\n${braja.hebrew}\n\nFonetica:\n${braja.transliteration}\n\nTraduccion:\n${braja.translation}`;
       navigator.clipboard.writeText(textToCopy);
       showToast('Bendición copiada al portapapeles');
     });
@@ -1248,44 +1168,36 @@ function renderReminders(members, events) {
   dom.birthdayContainer.innerHTML = '';
   dom.yahrtzeitContainer.innerHTML = '';
 
-  if (members.length === 0) {
+  const reminders = kernel.getUpcomingReminders
+    ? kernel.getUpcomingReminders(members, events)
+    : { birthdays: [], yahrtzeits: [] };
+
+  if (!members.length) {
     dom.birthdayContainer.innerHTML = '<p style="color: var(--text-secondary);">No hay familiares registrados.</p>';
     dom.yahrtzeitContainer.innerHTML = '<p style="color: var(--text-secondary);">No hay familiares registrados.</p>';
     return;
   }
 
-  const sortedBirthdays = [...members].sort((a, b) => {
-    const dateA = new Date(a.birthDate);
-    const dateB = new Date(b.birthDate);
-    return (dateA.getMonth() - dateB.getMonth()) || (dateA.getDate() - dateB.getDate());
-  });
-
-  sortedBirthdays.forEach(m => {
-    const birth = new Date(m.birthDate);
-    const month = birth.toLocaleString('es-ES', { month: 'short' });
-    const day = birth.getDate();
-
-    const item = document.createElement('div');
-    item.className = 'reminder-item';
-    item.innerHTML = `
+  reminders.birthdays.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'reminder-item';
+    row.innerHTML = `
       <div class="reminder-date-badge">
-        ${day}
-        <span>${month}</span>
+        ${item.day}
+        <span>${item.monthLabel}</span>
       </div>
       <div class="reminder-info">
-        <h4 class="reminder-title">Cumpleaños de ${m.name}</h4>
+        <h4 class="reminder-title">${item.title}</h4>
         <p class="reminder-desc">
-          Parentesco: <strong>${m.relationship}</strong> | Nac: ${m.birthDate}
-          ${m.hebrewBirthDate ? `<br>Hebreo: <span class="heb">${m.hebrewBirthDate}</span>` : ''}
+          Parentesco: <strong>${item.relationship}</strong> | Nac: ${item.date}
+          ${item.hebrewDate ? `<br>Hebreo: <span class="heb">${item.hebrewDate}</span>` : ''}
         </p>
       </div>
     `;
-    dom.birthdayContainer.appendChild(item);
+    dom.birthdayContainer.appendChild(row);
   });
 
-  const yahrtzeitEvents = events.filter(e => e.category === 'Yahrtzeit / Sepelio');
-
-  if (yahrtzeitEvents.length === 0) {
+  if (reminders.yahrtzeits.length === 0) {
     dom.yahrtzeitContainer.innerHTML = `
       <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
         <i class="fa-regular fa-lightbulb" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
@@ -1295,28 +1207,24 @@ function renderReminders(members, events) {
     return;
   }
 
-  yahrtzeitEvents.forEach(e => {
-    const date = new Date(e.date);
-    const month = date.toLocaleString('es-ES', { month: 'short' });
-    const day = date.getDate();
-
-    const item = document.createElement('div');
-    item.className = 'reminder-item';
-    item.style.borderLeftColor = 'var(--text-secondary)';
-    item.innerHTML = `
+  reminders.yahrtzeits.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'reminder-item';
+    row.style.borderLeftColor = 'var(--text-secondary)';
+    row.innerHTML = `
       <div class="reminder-date-badge" style="color: var(--text-secondary);">
-        ${day}
-        <span>${month}</span>
+        ${item.day}
+        <span>${item.monthLabel}</span>
       </div>
       <div class="reminder-info">
-        <h4 class="reminder-title">${e.title}</h4>
+        <h4 class="reminder-title">${item.title}</h4>
         <p class="reminder-desc">
-          Gregoriano: <strong>${e.date}</strong> | Lugar: ${e.location || 'No indicado'}
-          ${e.hebrewDate ? `<br>Hebreo (Yahrtzeit anual): <span class="heb">${e.hebrewDate}</span>` : ''}
+          Gregoriano: <strong>${item.date}</strong> | Lugar: ${item.location || 'No indicado'}
+          ${item.hebrewDate ? `<br>Hebreo (Yahrtzeit anual): <span class="heb">${item.hebrewDate}</span>` : ''}
         </p>
       </div>
     `;
-    dom.yahrtzeitContainer.appendChild(item);
+    dom.yahrtzeitContainer.appendChild(row);
   });
 }
 
@@ -1679,61 +1587,56 @@ function setupPhotoTagging(members) {
 }
 
 // 7. Zmanim & Calendario Exportación .ics
+async function getSelectedZmanimCity() {
+  const saved = await getSetting('zmanim_city');
+  return saved || kernel.DEFAULT_ZMANIM_CITY || 'BU';
+}
+
+function populateZmanimCitySelect(selectedCity) {
+  const select = document.getElementById('zmanim-city-select');
+  if (!select || !kernel.ZMANIM_CITIES) return;
+  select.innerHTML = kernel.ZMANIM_CITIES.map((city) => (
+    `<option value="${city.code}" ${city.code === selectedCity ? 'selected' : ''}>${city.label}</option>`
+  )).join('');
+}
+
 async function fetchHebcalZmanim() {
   const zmanimDisplay = document.getElementById('zmanim-times-display');
   const locationText = document.getElementById('zmanim-location-text');
   if (!zmanimDisplay) return;
 
-  try {
-    const response = await fetch('https://www.hebcal.com/zmanim?cfg=json&city=BU&g2h=1');
-    if (!response.ok) throw new Error();
-    const data = await response.json();
+  const city = await getSelectedZmanimCity();
+  populateZmanimCitySelect(city);
 
-    locationText.innerText = 'Buenos Aires, Argentina (Hebcal Zmanim)';
-    if (data.times) {
-      const candles = data.times.candles ? data.times.candles.slice(11, 16) : '18:15';
-      const havdalah = data.times.havdalah ? data.times.havdalah.slice(11, 16) : '19:10';
-      zmanimDisplay.innerHTML = `
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${candles}</div>
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${havdalah}</div>
-      `;
-    }
-  } catch (e) {
-    locationText.innerText = 'Horarios de Shabat estimados';
-    zmanimDisplay.innerHTML = `
-      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Velas:</strong> 18:15</div>
-      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> 19:10</div>
-    `;
-  }
+  const result = kernel.fetchZmanim
+    ? await kernel.fetchZmanim({ city })
+    : { ok: false, candles: '18:15', havdalah: '19:10', locationLabel: 'Horarios de Shabat estimados' };
+
+  locationText.innerText = result.locationLabel;
+  zmanimDisplay.innerHTML = `
+    <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${result.candles}</div>
+    <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${result.havdalah}</div>
+  `;
 }
 
-function exportRemindersToICS(members, events) {
-  let icsContent = "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Dor LDor Family Journal//ES\r\n";
-
-  members.forEach(m => {
-    if (m.birthDate) {
-      const year = new Date().getFullYear();
-      const dt = m.birthDate.replace(/-/g, '');
-      icsContent += "BEGIN:VEVENT\r\n";
-      icsContent += `SUMMARY:Cumpleaños de ${m.name} (${m.hebrewBirthDate || ''})\r\n`;
-      icsContent += `DESCRIPTION:Cumpleaños familiar - ${m.relationship}\r\n`;
-      icsContent += `DTSTART;VALUE=DATE:${year}${dt.slice(4)}\r\n`;
-      icsContent += "RRULE:FREQ=YEARLY\r\n";
-      icsContent += "END:VEVENT\r\n";
-    }
-  });
-
-  icsContent += "END:VCALENDAR\r\n";
-
-  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+function downloadTextFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `aniversarios_familia_dorldor.ics`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+function exportRemindersToICS(members, events) {
+  const icsContent = kernel.buildIcsCalendar
+    ? kernel.buildIcsCalendar({ members, events })
+    : 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nEND:VCALENDAR\r\n';
+
+  downloadTextFile('aniversarios_familia_dorldor.ics', icsContent, 'text/calendar;charset=utf-8');
   showToast('Archivo de calendario .ics descargado');
 }
 

@@ -1,0 +1,137 @@
+/* Superficie lite montable: independiente de IDs de la app completa. */
+.dorldor-lite {
+  font-family: Inter, system-ui, sans-serif;
+  color: #111827;
+  max-width: 720px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.dorldor-lite-header h2 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+.dorldor-lite-header p,
+.dorldor-lite-location,
+.dorldor-lite-empty {
+  margin: 0;
+  color: #4B5563;
+  font-size: 0.9rem;
+}
+
+.dorldor-lite-card {
+  background: #FFFDF9;
+  border: 1px solid #E5DFD3;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.dorldor-lite-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.dorldor-lite-card h3 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+}
+
+.dorldor-lite-card-head h3 {
+  margin: 0;
+}
+
+.dorldor-lite-select,
+.dorldor-lite-btn {
+  font: inherit;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.dorldor-lite-select {
+  border: 1px solid #D1C7BD;
+  background: #fff;
+}
+
+.dorldor-lite-btn {
+  border: 0;
+  background: #0A2540;
+  color: #fff;
+  cursor: pointer;
+}
+
+.dorldor-lite-btn-ghost {
+  background: transparent;
+  color: #0A2540;
+  border: 1px solid #D1C7BD;
+}
+
+.dorldor-lite-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.dorldor-lite-times span {
+  background: #F7F5F0;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.dorldor-lite-brajot,
+.dorldor-lite-reminder {
+  display: grid;
+  gap: 10px;
+}
+
+.dorldor-lite-braja,
+.dorldor-lite-reminder {
+  border: 1px solid #E5DFD3;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.dorldor-lite-braja-head,
+.dorldor-lite-reminder {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dorldor-lite-hebrew {
+  font-size: 1.1rem;
+  direction: rtl;
+  text-align: right;
+}
+
+.dorldor-lite-badge {
+  min-width: 48px;
+  text-align: center;
+  font-weight: 700;
+  color: #C5A059;
+}
+
+.dorldor-lite-badge span {
+  display: block;
+  font-size: 0.75rem;
+  color: #4B5563;
+  font-weight: 500;
+}
+
+[data-theme="dark"] .dorldor-lite,
+.dorldor-lite[data-theme="dark"] {
+  color: #F3F4F6;
+}
+
+[data-theme="dark"] .dorldor-lite-card,
+.dorldor-lite[data-theme="dark"] .dorldor-lite-card {
+  background: #0E1624;
+  border-color: #1E293B;
+}
