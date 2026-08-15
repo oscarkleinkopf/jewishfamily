@@ -1,11 +1,21 @@
-const CACHE_NAME = 'dorldor-v1';
+const CACHE_NAME = 'dorldor-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './lite.html',
   './styles.css',
+  './lite.css',
   './app.js',
+  './app-core.js',
+  './dom-cache.js',
+  './lite.js',
   './db.js',
   './sampleData.js',
+  './lib/calendar.js',
+  './lib/brajot.js',
+  './lib/reminders.js',
+  './lib/validation.js',
+  './lib/family-tree.js',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
