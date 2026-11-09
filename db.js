@@ -208,7 +208,12 @@ function base64ToBlob(blobInfo) {
   const contentType = blobInfo.type;
   
   const parts = base64Data.split(',');
-  const byteCharacters = atob(parts[1] || parts[0]);
+  let byteCharacters;
+  try {
+    byteCharacters = atob(parts[1] || parts[0]);
+  } catch {
+    throw new Error('Archivo de copia de seguridad inválido.');
+  }
   const byteArrays = [];
 
   for (let offset = 0; offset < byteCharacters.length; offset += 512) {
@@ -270,51 +275,75 @@ async function exportDatabase() {
   });
 }
 
+function decodeImportedBlob(blobInfo) {
+  try {
+    return base64ToBlob(blobInfo);
+  } catch {
+    throw new Error(globalThis.DorLDorSecurity.BACKUP_ERROR);
+  }
+}
+
+function prepareBackupForImport(data) {
+  const members = data.members.map((member) => {
+    const memberCopy = { ...member };
+    if (memberCopy.avatar && typeof memberCopy.avatar === 'object' && memberCopy.avatar.isBlob) {
+      memberCopy.avatar = decodeImportedBlob(memberCopy.avatar);
+    }
+    return memberCopy;
+  });
+
+  const events = data.events.map((event) => {
+    const eventCopy = { ...event };
+    if (eventCopy.media && Array.isArray(eventCopy.media)) {
+      eventCopy.media = eventCopy.media.map((item) => {
+        const itemCopy = { ...item };
+        if (itemCopy.blob && typeof itemCopy.blob === 'object' && itemCopy.blob.isBlob) {
+          itemCopy.blob = decodeImportedBlob(itemCopy.blob);
+        }
+        return itemCopy;
+      });
+    }
+    return eventCopy;
+  });
+
+  let shorashim = data.shorashim ? { ...data.shorashim } : null;
+  if (shorashim && shorashim.tree && typeof shorashim.tree === 'object') {
+    shorashim.tree = { ...shorashim.tree };
+    for (const key of Object.keys(shorashim.tree)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        delete shorashim.tree[key];
+        continue;
+      }
+      const node = shorashim.tree[key];
+      if (node && node.avatar && typeof node.avatar === 'object' && node.avatar.isBlob) {
+        shorashim.tree[key] = { ...node, avatar: decodeImportedBlob(node.avatar) };
+      }
+    }
+  }
+
+  return { members, events, shorashim };
+}
+
 async function importDatabase(jsonString) {
-  const data = JSON.parse(jsonString);
+  const parsed = globalThis.DorLDorSecurity.parseBackupJson(jsonString);
+  const prepared = prepareBackupForImport(parsed);
   const db = await initDB();
 
   await clearAllData();
 
   const transaction = db.transaction(['members', 'events', 'shorashim'], 'readwrite');
-  
-  if (data.members && Array.isArray(data.members)) {
-    const memberStore = transaction.objectStore('members');
-    for (const m of data.members) {
-      if (m.avatar && typeof m.avatar === 'object' && m.avatar.isBlob) {
-        m.avatar = base64ToBlob(m.avatar);
-      }
-      memberStore.put(m);
-    }
+  const memberStore = transaction.objectStore('members');
+  for (const member of prepared.members) {
+    memberStore.put(member);
   }
 
-  if (data.events && Array.isArray(data.events)) {
-    const eventStore = transaction.objectStore('events');
-    for (const e of data.events) {
-      if (e.media && Array.isArray(e.media)) {
-        e.media = e.media.map((item) => {
-          if (item.blob && typeof item.blob === 'object' && item.blob.isBlob) {
-            item.blob = base64ToBlob(item.blob);
-          }
-          return item;
-        });
-      }
-      eventStore.put(e);
-    }
+  const eventStore = transaction.objectStore('events');
+  for (const event of prepared.events) {
+    eventStore.put(event);
   }
 
-  if (data.shorashim) {
-    const shorashimStore = transaction.objectStore('shorashim');
-    const sh = data.shorashim;
-    if (sh.tree) {
-      for (const key in sh.tree) {
-        const node = sh.tree[key];
-        if (node && node.avatar && typeof node.avatar === 'object' && node.avatar.isBlob) {
-          node.avatar = base64ToBlob(node.avatar);
-        }
-      }
-    }
-    shorashimStore.put(sh);
+  if (prepared.shorashim) {
+    transaction.objectStore('shorashim').put(prepared.shorashim);
   }
 
   return new Promise((resolve, reject) => {

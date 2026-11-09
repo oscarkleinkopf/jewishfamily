@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "npx http-server -p 8080",
     "backup": "node backup.js",
-    "watch": "node watch-backup.js"
+    "watch": "node watch-backup.js",
+    "lint": "node --check security.js && node --check db.js && node --check app.js && node --check backup.js && node --check watch-backup.js && node --check backup-ignore.js && node --check sw.js && node --check sampleData.js && node --check test/security.test.js && node --check test/backup-ignore.test.js",
+    "test": "node --test"
   },
   "keywords": ["jewish", "family", "diary", "shorashim", "hebcal"],
   "author": "",

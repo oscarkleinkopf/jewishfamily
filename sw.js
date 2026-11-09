@@ -1,16 +1,17 @@
-const CACHE_NAME = 'dorldor-v1';
+const CACHE_NAME = 'dorldor-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
+  './security.js',
   './app.js',
   './db.js',
   './sampleData.js',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.14.0/html2pdf.bundle.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js'
 ];
 

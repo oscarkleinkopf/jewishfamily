@@ -152,6 +152,20 @@ const dom = {
   toastMessage: document.getElementById('toast-message')
 };
 
+const { escapeHtml, sanitizeUrl } = globalThis.DorLDorSecurity;
+const PLACEHOLDER_EVENT_IMAGE = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800';
+const PLACEHOLDER_AVATAR = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+
+function memberAvatarSrc(member) {
+  if (member.avatar instanceof Blob) {
+    return URL.createObjectURL(member.avatar);
+  }
+  if (typeof member.avatar === 'string' && member.avatar) {
+    return sanitizeUrl(member.avatar, PLACEHOLDER_AVATAR);
+  }
+  return PLACEHOLDER_AVATAR;
+}
+
 // --- Inicialización de la App ---
 document.addEventListener('DOMContentLoaded', async () => {
   await initDB();
@@ -741,7 +755,7 @@ function renderTimeline(events, members) {
     const card = document.createElement('article');
     card.className = 'card timeline-card';
 
-    let mediaSrc = 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800';
+    let mediaSrc = PLACEHOLDER_EVENT_IMAGE;
     let isVideo = false;
     
     if (event.media && event.media.length > 0) {
@@ -751,16 +765,17 @@ function renderTimeline(events, members) {
       }
       isVideo = firstMedia.type === 'video';
     } else if (event.imageUrl) {
-      mediaSrc = event.imageUrl;
+      mediaSrc = sanitizeUrl(event.imageUrl, PLACEHOLDER_EVENT_IMAGE);
     }
 
+    const safeMediaSrc = escapeHtml(mediaSrc);
     const mediaHtml = isVideo
       ? `<div class="timeline-card-media">
-          <video src="${mediaSrc}"></video>
+          <video src="${safeMediaSrc}"></video>
           <div class="media-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
          </div>`
       : `<div class="timeline-card-media">
-          <img src="${mediaSrc}" alt="${event.title}" loading="lazy">
+          <img src="${safeMediaSrc}" alt="${escapeHtml(event.title)}" loading="lazy">
          </div>`;
 
     let taggedHtml = '';
@@ -769,8 +784,8 @@ function renderTimeline(events, members) {
       event.taggedMembers.forEach(mId => {
         const m = membersMap[mId];
         if (m) {
-          const avatarUrl = m.avatar && m.avatar instanceof Blob ? URL.createObjectURL(m.avatar) : (m.avatar || 'https://www.w3.org/2000/svg');
-          taggedHtml += `<img src="${avatarUrl}" class="tagged-avatar" alt="${m.name}" title="${m.name} (${m.relationship})">`;
+          const avatarUrl = escapeHtml(memberAvatarSrc(m));
+          taggedHtml += `<img src="${avatarUrl}" class="tagged-avatar" alt="${escapeHtml(m.name)}" title="${escapeHtml(m.name)} (${escapeHtml(m.relationship)})">`;
         }
       });
       taggedHtml += '</div>';
@@ -783,9 +798,9 @@ function renderTimeline(events, members) {
         if (braja) {
           blessingsHtml += `
             <div class="card-linked-blessing">
-              <div class="blessing-title"><i class="fa-solid fa-scroll"></i> ${braja.title}</div>
-              <div class="blessing-hebrew">${braja.hebrew}</div>
-              <div class="blessing-trans">${braja.transliteration}</div>
+              <div class="blessing-title"><i class="fa-solid fa-scroll"></i> ${escapeHtml(braja.title)}</div>
+              <div class="blessing-hebrew">${escapeHtml(braja.hebrew)}</div>
+              <div class="blessing-trans">${escapeHtml(braja.transliteration)}</div>
             </div>
           `;
         }
@@ -796,20 +811,20 @@ function renderTimeline(events, members) {
       ${mediaHtml}
       <div class="timeline-card-content">
         <div>
-          <span class="timeline-card-category">${event.category}</span>
+          <span class="timeline-card-category">${escapeHtml(event.category)}</span>
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <h3 class="timeline-card-title">${event.title}</h3>
+            <h3 class="timeline-card-title">${escapeHtml(event.title)}</h3>
             <div class="no-print" style="display: flex; gap: 8px;">
-              <button class="btn btn-secondary btn-icon-only edit-event-btn" data-id="${event.id}" title="Editar" style="padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
-              <button class="btn btn-secondary btn-icon-only delete-event-btn" data-id="${event.id}" title="Eliminar" style="padding: 6px 10px; color: #DC2626;"><i class="fa-solid fa-trash-can"></i></button>
+              <button class="btn btn-secondary btn-icon-only edit-event-btn" data-id="${escapeHtml(event.id)}" title="Editar" style="padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-secondary btn-icon-only delete-event-btn" data-id="${escapeHtml(event.id)}" title="Eliminar" style="padding: 6px 10px; color: #DC2626;"><i class="fa-solid fa-trash-can"></i></button>
             </div>
           </div>
           <div class="timeline-card-date">
-            <span><i class="fa-solid fa-calendar-day"></i> ${event.date}</span>
-            ${event.hebrewDate ? `<span class="heb-date"><i class="fa-solid fa-star-of-david"></i> ${event.hebrewDate}</span>` : ''}
-            ${event.location ? `<span><i class="fa-solid fa-location-dot"></i> ${event.location}</span>` : ''}
+            <span><i class="fa-solid fa-calendar-day"></i> ${escapeHtml(event.date)}</span>
+            ${event.hebrewDate ? `<span class="heb-date"><i class="fa-solid fa-star-of-david"></i> ${escapeHtml(event.hebrewDate)}</span>` : ''}
+            ${event.location ? `<span><i class="fa-solid fa-location-dot"></i> ${escapeHtml(event.location)}</span>` : ''}
           </div>
-          <p class="timeline-card-body">${event.description}</p>
+          <p class="timeline-card-body">${escapeHtml(event.description)}</p>
           ${blessingsHtml}
         </div>
         <div class="timeline-card-footer">
@@ -860,22 +875,39 @@ function filterAndRenderTimeline(events, members) {
 
 function populateFilterMemberSelect(members) {
   const currentVal = dom.filterMemberSelect.value;
-  dom.filterMemberSelect.innerHTML = '<option value="">Todos los familiares</option>';
+  dom.filterMemberSelect.replaceChildren();
+  const allOption = document.createElement('option');
+  allOption.value = '';
+  allOption.textContent = 'Todos los familiares';
+  dom.filterMemberSelect.appendChild(allOption);
   members.forEach(m => {
-    dom.filterMemberSelect.innerHTML += `<option value="${m.id}">${m.name} (${m.relationship})</option>`;
+    const option = document.createElement('option');
+    option.value = m.id;
+    option.textContent = `${m.name} (${m.relationship})`;
+    dom.filterMemberSelect.appendChild(option);
   });
   dom.filterMemberSelect.value = currentVal;
 }
 
 function populateTaggedMembersCheckboxes(members) {
-  dom.eventTaggedCheckboxes.innerHTML = '';
+  dom.eventTaggedCheckboxes.replaceChildren();
   members.forEach(m => {
-    dom.eventTaggedCheckboxes.innerHTML += `
-      <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
-        <input type="checkbox" value="${m.id}">
-        <span>${m.name} (${m.relationship})</span>
-      </label>
-    `;
+    const label = document.createElement('label');
+    label.style.display = 'flex';
+    label.style.alignItems = 'center';
+    label.style.gap = '8px';
+    label.style.fontSize = '0.85rem';
+    label.style.cursor = 'pointer';
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.value = m.id;
+
+    const span = document.createElement('span');
+    span.textContent = `${m.name} (${m.relationship})`;
+
+    label.append(input, span);
+    dom.eventTaggedCheckboxes.appendChild(label);
   });
 }
 
@@ -934,14 +966,14 @@ function renderGallery(events) {
         gridItem.setAttribute('data-index', count);
 
         const innerHtml = item.type === 'video'
-          ? `<video src="${mediaSrc}"></video>
+          ? `<video src="${escapeHtml(mediaSrc)}"></video>
              <div class="gallery-overlay">
-               <h4>${event.title}</h4>
+               <h4>${escapeHtml(event.title)}</h4>
                <span><i class="fa-solid fa-circle-play"></i> Video</span>
              </div>`
-          : `<img src="${mediaSrc}" alt="${event.title}" loading="lazy">
+          : `<img src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(event.title)}" loading="lazy">
              <div class="gallery-overlay">
-               <h4>${event.title}</h4>
+               <h4>${escapeHtml(event.title)}</h4>
                <span><i class="fa-solid fa-camera"></i> Foto</span>
              </div>`;
 
@@ -956,10 +988,11 @@ function renderGallery(events) {
         count++;
       });
     } else if (event.imageUrl) {
+      const safeImageUrl = sanitizeUrl(event.imageUrl, PLACEHOLDER_EVENT_IMAGE);
       slideshowMediaList.push({
         title: event.title,
         desc: event.description,
-        url: event.imageUrl,
+        url: safeImageUrl,
         type: 'image'
       });
 
@@ -967,9 +1000,9 @@ function renderGallery(events) {
       gridItem.className = 'gallery-item';
       gridItem.setAttribute('data-index', count);
       gridItem.innerHTML = `
-        <img src="${event.imageUrl}" alt="${event.title}" loading="lazy">
+        <img src="${escapeHtml(safeImageUrl)}" alt="${escapeHtml(event.title)}" loading="lazy">
         <div class="gallery-overlay">
-          <h4>${event.title}</h4>
+          <h4>${escapeHtml(event.title)}</h4>
           <span><i class="fa-solid fa-camera"></i> Foto</span>
         </div>
       `;
@@ -1013,22 +1046,20 @@ function renderFamily(members) {
     const card = document.createElement('div');
     card.className = 'card member-card';
     
-    const avatarUrl = m.avatar && m.avatar instanceof Blob 
-      ? URL.createObjectURL(m.avatar) 
-      : (m.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150');
+    const avatarUrl = memberAvatarSrc(m);
 
     card.innerHTML = `
-      <img src="${avatarUrl}" class="member-card-avatar" alt="${m.name}">
+      <img src="${escapeHtml(avatarUrl)}" class="member-card-avatar" alt="${escapeHtml(m.name)}">
       <div class="member-card-details">
-        <h4 class="member-card-name">${m.name}</h4>
-        ${m.hebrewName ? `<p class="member-card-hebrew">${m.hebrewName}</p>` : ''}
-        <span class="member-card-relation">${m.relationship}</span>
-        <p class="member-card-birthday"><i class="fa-solid fa-cake-candles"></i> Nac: ${m.birthDate}</p>
-        ${m.hebrewBirthDate ? `<p class="member-card-birthday" style="color: var(--accent-color);"><i class="fa-solid fa-star-of-david"></i> ${m.hebrewBirthDate}</p>` : ''}
+        <h4 class="member-card-name">${escapeHtml(m.name)}</h4>
+        ${m.hebrewName ? `<p class="member-card-hebrew">${escapeHtml(m.hebrewName)}</p>` : ''}
+        <span class="member-card-relation">${escapeHtml(m.relationship)}</span>
+        <p class="member-card-birthday"><i class="fa-solid fa-cake-candles"></i> Nac: ${escapeHtml(m.birthDate)}</p>
+        ${m.hebrewBirthDate ? `<p class="member-card-birthday" style="color: var(--accent-color);"><i class="fa-solid fa-star-of-david"></i> ${escapeHtml(m.hebrewBirthDate)}</p>` : ''}
       </div>
       <div class="no-print" style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn btn-secondary edit-member-btn" data-id="${m.id}" style="padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
-        <button class="btn btn-secondary delete-member-btn" data-id="${m.id}" style="padding: 6px 10px; color: #DC2626;"><i class="fa-solid fa-trash-can"></i></button>
+        <button class="btn btn-secondary edit-member-btn" data-id="${escapeHtml(m.id)}" style="padding: 6px 10px;"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-secondary delete-member-btn" data-id="${escapeHtml(m.id)}" style="padding: 6px 10px; color: #DC2626;"><i class="fa-solid fa-trash-can"></i></button>
       </div>
     `;
 
@@ -1045,10 +1076,10 @@ function renderFamily(members) {
     const treeNode = document.createElement('div');
     treeNode.className = 'tree-node';
     treeNode.innerHTML = `
-      <img src="${avatarUrl}" class="tree-node-avatar" alt="${m.name}">
-      <span class="tree-node-relation">${m.relationship}</span>
-      <h4 class="tree-node-name">${m.name.split(' ')[0]}</h4>
-      ${m.hebrewName ? `<span class="tree-node-hebrew">${m.hebrewName.split(' ben ')[0].split(' bat ')[0]}</span>` : ''}
+      <img src="${escapeHtml(avatarUrl)}" class="tree-node-avatar" alt="${escapeHtml(m.name)}">
+      <span class="tree-node-relation">${escapeHtml(m.relationship)}</span>
+      <h4 class="tree-node-name">${escapeHtml((m.name || '').split(' ')[0])}</h4>
+      ${m.hebrewName ? `<span class="tree-node-hebrew">${escapeHtml(m.hebrewName.split(' ben ')[0].split(' bat ')[0])}</span>` : ''}
     `;
 
     treeNode.addEventListener('click', () => {
@@ -1200,16 +1231,16 @@ function renderBrajot(events, filterCategory = 'all') {
     card.innerHTML = `
       <div>
         <div class="braja-card-header">
-          <span class="braja-category-tag">${braja.category}</span>
+          <span class="braja-category-tag">${escapeHtml(braja.category)}</span>
           <button class="btn btn-secondary btn-icon-only copy-braja-btn" title="Copiar texto" style="padding: 6px 10px;"><i class="fa-solid fa-copy"></i></button>
         </div>
-        <h3>${braja.title}</h3>
-        <div class="braja-hebrew font-hebrew-title">${braja.hebrew}</div>
-        <p class="braja-transliteration"><strong>Fonetica:</strong> ${braja.transliteration}</p>
-        <p class="braja-translation"><strong>Traduccion:</strong> ${braja.translation}</p>
+        <h3>${escapeHtml(braja.title)}</h3>
+        <div class="braja-hebrew font-hebrew-title">${escapeHtml(braja.hebrew)}</div>
+        <p class="braja-transliteration"><strong>Fonetica:</strong> ${escapeHtml(braja.transliteration)}</p>
+        <p class="braja-translation"><strong>Traduccion:</strong> ${escapeHtml(braja.translation)}</p>
       </div>
       <div>
-        <p class="braja-desc">${braja.description}</p>
+        <p class="braja-desc">${escapeHtml(braja.description)}</p>
         <div class="braja-actions no-print">
           <button class="btn btn-primary btn-sm link-braja-btn" style="width: 100%; margin-top: 12px;">
             <i class="fa-solid fa-link"></i> Vincular a un Recuerdo
@@ -1236,9 +1267,16 @@ function openLinkBrajaModal(braja, events) {
   dom.linkBrajaIdInput.value = braja.id;
   dom.linkBrajaTitleDisplay.innerText = braja.title;
   
-  dom.linkBrajaEventSelect.innerHTML = '<option value="">Selecciona un evento...</option>';
+  dom.linkBrajaEventSelect.replaceChildren();
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Selecciona un evento...';
+  dom.linkBrajaEventSelect.appendChild(placeholder);
   events.forEach(e => {
-    dom.linkBrajaEventSelect.innerHTML += `<option value="${e.id}">${e.title} (${e.date})</option>`;
+    const option = document.createElement('option');
+    option.value = e.id;
+    option.textContent = `${e.title} (${e.date})`;
+    dom.linkBrajaEventSelect.appendChild(option);
   });
 
   openModal(dom.modalLinkBraja);
@@ -1269,14 +1307,14 @@ function renderReminders(members, events) {
     item.className = 'reminder-item';
     item.innerHTML = `
       <div class="reminder-date-badge">
-        ${day}
-        <span>${month}</span>
+        ${escapeHtml(day)}
+        <span>${escapeHtml(month)}</span>
       </div>
       <div class="reminder-info">
-        <h4 class="reminder-title">Cumpleaños de ${m.name}</h4>
+        <h4 class="reminder-title">Cumpleaños de ${escapeHtml(m.name)}</h4>
         <p class="reminder-desc">
-          Parentesco: <strong>${m.relationship}</strong> | Nac: ${m.birthDate}
-          ${m.hebrewBirthDate ? `<br>Hebreo: <span class="heb">${m.hebrewBirthDate}</span>` : ''}
+          Parentesco: <strong>${escapeHtml(m.relationship)}</strong> | Nac: ${escapeHtml(m.birthDate)}
+          ${m.hebrewBirthDate ? `<br>Hebreo: <span class="heb">${escapeHtml(m.hebrewBirthDate)}</span>` : ''}
         </p>
       </div>
     `;
@@ -1305,14 +1343,14 @@ function renderReminders(members, events) {
     item.style.borderLeftColor = 'var(--text-secondary)';
     item.innerHTML = `
       <div class="reminder-date-badge" style="color: var(--text-secondary);">
-        ${day}
-        <span>${month}</span>
+        ${escapeHtml(day)}
+        <span>${escapeHtml(month)}</span>
       </div>
       <div class="reminder-info">
-        <h4 class="reminder-title">${e.title}</h4>
+        <h4 class="reminder-title">${escapeHtml(e.title)}</h4>
         <p class="reminder-desc">
-          Gregoriano: <strong>${e.date}</strong> | Lugar: ${e.location || 'No indicado'}
-          ${e.hebrewDate ? `<br>Hebreo (Yahrtzeit anual): <span class="heb">${e.hebrewDate}</span>` : ''}
+          Gregoriano: <strong>${escapeHtml(e.date)}</strong> | Lugar: ${escapeHtml(e.location || 'No indicado')}
+          ${e.hebrewDate ? `<br>Hebreo (Yahrtzeit anual): <span class="heb">${escapeHtml(e.hebrewDate)}</span>` : ''}
         </p>
       </div>
     `;
@@ -1350,16 +1388,20 @@ function renderSlideshowContent() {
 
   dom.slideshowMediaContainer.innerHTML = '';
   
+  const safeSrc = item.url && String(item.url).startsWith('blob:')
+    ? item.url
+    : sanitizeUrl(item.url, PLACEHOLDER_EVENT_IMAGE);
+
   if (item.type === 'video') {
     const video = document.createElement('video');
-    video.src = item.url;
+    video.src = safeSrc;
     video.controls = true;
     video.autoplay = true;
     video.className = 'slideshow-media';
     dom.slideshowMediaContainer.appendChild(video);
   } else {
     const img = document.createElement('img');
-    img.src = item.url;
+    img.src = safeSrc;
     img.className = 'slideshow-media';
     img.alt = item.title;
     dom.slideshowMediaContainer.appendChild(img);
@@ -1648,9 +1690,16 @@ function setupPhotoTagging(members) {
 
   if (!toggleBtn || !selectorBox) return;
 
-  memberSelect.innerHTML = '<option value="">Selecciona familiar...</option>';
+  memberSelect.replaceChildren();
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = 'Selecciona familiar...';
+  memberSelect.appendChild(placeholder);
   members.forEach(m => {
-    memberSelect.innerHTML += `<option value="${m.name}">${m.name} (${m.relationship})</option>`;
+    const option = document.createElement('option');
+    option.value = m.name;
+    option.textContent = `${m.name} (${m.relationship})`;
+    memberSelect.appendChild(option);
   });
 
   toggleBtn.addEventListener('click', () => {
@@ -1694,8 +1743,8 @@ async function fetchHebcalZmanim() {
       const candles = data.times.candles ? data.times.candles.slice(11, 16) : '18:15';
       const havdalah = data.times.havdalah ? data.times.havdalah.slice(11, 16) : '19:10';
       zmanimDisplay.innerHTML = `
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${candles}</div>
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${havdalah}</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${escapeHtml(candles)}</div>
+        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${escapeHtml(havdalah)}</div>
       `;
     }
   } catch (e) {

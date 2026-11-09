@@ -1,9 +1,8 @@
-import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { shouldIgnoreBackupEntry } from './backup-ignore.js';
 
 const SCRATCH_DIR = process.env.SCRATCH_DIR || 'C:\\Users\\oscar\\.gemini\\antigravity\\scratch\\jewishfamily';
-const IGNORE_PATTERNS = ['.git', 'node_modules', '.env'];
 
 let debounceTimer = null;
 
@@ -16,7 +15,7 @@ function copyRecursiveSync(src, dest) {
       fs.mkdirSync(dest, { recursive: true });
     }
     fs.readdirSync(src).forEach((childItemName) => {
-      if (!IGNORE_PATTERNS.includes(childItemName)) {
+      if (!shouldIgnoreBackupEntry(childItemName)) {
         copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
       }
     });
@@ -30,9 +29,8 @@ function copyRecursiveSync(src, dest) {
 }
 
 function performBackup() {
-  console.log(`\n⏰ [${new Date().toLocaleTimeString('es-ES')}] Cambio detectado! Realizando respaldo automático...`);
+  console.log(`\n⏰ [${new Date().toLocaleTimeString('es-ES')}] Cambio detectado! Realizando respaldo local...`);
 
-  // 1. Respaldo local en la carpeta scratch
   try {
     if (!fs.existsSync(SCRATCH_DIR)) {
       fs.mkdirSync(SCRATCH_DIR, { recursive: true });
@@ -42,47 +40,27 @@ function performBackup() {
   } catch (err) {
     console.error('  ❌ Error en respaldo local:', err.message);
   }
-
-  // 2. Respaldo remoto en GitHub
-  try {
-    execSync('git add .', { stdio: 'pipe' });
-    const status = execSync('git status --porcelain').toString();
-
-    if (status.trim()) {
-      const commitMsg = `Respaldo automático - ${new Date().toLocaleString('es-ES')}`;
-      execSync(`git commit -m "${commitMsg}"`, { stdio: 'pipe' });
-      execSync('git push origin main', { stdio: 'pipe' });
-      console.log('  ✓ Respaldo subido a GitHub (main).');
-    } else {
-      console.log('  ℹ️ Sin cambios pendientes para git.');
-    }
-  } catch (err) {
-    console.error('  ❌ Error al empujar a GitHub:', err.message);
-  }
 }
 
 function scheduleBackup() {
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     performBackup();
-  }, 3000); // 3 segundos de debounce para evitar commits por cada pulsación
+  }, 3000);
 }
 
-console.log('👀 Observando cambios en los archivos del proyecto para respaldo automático...');
+console.log('👀 Observando cambios en los archivos del proyecto para respaldo local...');
 console.log(`📁 Carpeta local: ${SCRATCH_DIR}`);
-console.log('🐙 Repositorio: https://github.com/oscarkleinkopf/jewishfamily.git\n');
+console.log('ℹ️  El push automático a GitHub se eliminó. Los commits deben hacerse a mano.\n');
 
-// Realizar un respaldo inicial al arrancar
 performBackup();
 
-// Vigilar cambios en la carpeta
 fs.watch('.', { recursive: true }, (eventType, filename) => {
   if (filename) {
     const parts = filename.split(path.sep);
-    if (!IGNORE_PATTERNS.some(ignore => parts.includes(ignore))) {
+    if (!parts.some((part) => shouldIgnoreBackupEntry(part))) {
       console.log(`📝 Archivo modificado: ${filename}`);
       scheduleBackup();
     }
   }
 });
-
