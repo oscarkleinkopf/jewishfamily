@@ -5,10 +5,12 @@ Aplicación web para registrar acontecimientos de la vida judía familiar, bibli
 ## Repositorio Oficial
 https://github.com/oscarkleinkopf/jewishfamily.git
 
-## Sistema de Respaldo Automático
-Este proyecto cuenta con un sistema de observación en tiempo real (`watch-backup.js`). Cada vez que se modifica y guarda un archivo, se realiza automáticamente un respaldo en:
-1. La carpeta local `scratch`
-2. El repositorio en GitHub (`main`)
+## Sistema de Respaldo Local
+`backup.js` y `watch-backup.js` copian el proyecto a una carpeta scratch local. **Ya no hacen `git add`, commit ni push.** El push automático a `main` se eliminó para evitar publicar secretos (por ejemplo `.env.local`).
+
+Archivos ignorados en el respaldo local incluyen `.env`, `.env.*`, `.netlify`, `node_modules`, `.git` y claves (`.pem` / `.key`).
+
+Para versionar cambios, crea commits y pushes de forma manual.
 
 ## Licencia
 
