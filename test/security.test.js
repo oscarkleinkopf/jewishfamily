@@ -100,15 +100,23 @@ test('parseBackupJson rejects malformed records', () => {
   );
 });
 
-test('importDatabase validates JSON before clearing IndexedDB', () => {
+test('importDatabase validates JSON before an atomic same-transaction replace', () => {
   const source = readFileSync(join(root, 'db.js'), 'utf8');
-  const importFn = source.slice(source.indexOf('async function importDatabase'));
+  const importFn = source.slice(
+    source.indexOf('async function importDatabase'),
+    source.indexOf('async function clearAllData')
+  );
   const parseIdx = importFn.indexOf('parseBackupJson');
   const prepareIdx = importFn.indexOf('prepareBackupForImport');
-  const clearIdx = importFn.indexOf('clearAllData');
-  assert.ok(parseIdx !== -1 && prepareIdx !== -1 && clearIdx !== -1);
+  const txIdx = importFn.indexOf("db.transaction(['members', 'events', 'shorashim']");
+  const clearIdx = importFn.indexOf('.clear()');
+  const putIdx = importFn.indexOf('.put(');
+  assert.ok(parseIdx !== -1 && prepareIdx !== -1 && txIdx !== -1 && clearIdx !== -1 && putIdx !== -1);
+  assert.equal(importFn.includes('clearAllData'), false);
   assert.ok(parseIdx < prepareIdx);
-  assert.ok(prepareIdx < clearIdx);
+  assert.ok(prepareIdx < txIdx);
+  assert.ok(txIdx < clearIdx);
+  assert.ok(clearIdx < putIdx);
 });
 
 test('html2pdf.js is pinned to the GHSA-w8x4-x68c-m6fc patched release', () => {

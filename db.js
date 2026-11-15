@@ -329,26 +329,29 @@ async function importDatabase(jsonString) {
   const prepared = prepareBackupForImport(parsed);
   const db = await initDB();
 
-  await clearAllData();
-
   const transaction = db.transaction(['members', 'events', 'shorashim'], 'readwrite');
   const memberStore = transaction.objectStore('members');
+  const eventStore = transaction.objectStore('events');
+  const shorashimStore = transaction.objectStore('shorashim');
+
+  memberStore.clear();
+  eventStore.clear();
+  shorashimStore.clear();
+
   for (const member of prepared.members) {
     memberStore.put(member);
   }
-
-  const eventStore = transaction.objectStore('events');
   for (const event of prepared.events) {
     eventStore.put(event);
   }
-
   if (prepared.shorashim) {
-    transaction.objectStore('shorashim').put(prepared.shorashim);
+    shorashimStore.put(prepared.shorashim);
   }
 
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve(true);
     transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error || new Error(globalThis.DorLDorSecurity.BACKUP_ERROR));
   });
 }
 

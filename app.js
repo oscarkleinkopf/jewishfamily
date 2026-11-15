@@ -107,6 +107,7 @@ const dom = {
   
   // Formularios e inputs
   addEventForm: document.getElementById('add-event-form'),
+  eventModalTitle: document.getElementById('event-modal-title'),
   eventIdInput: document.getElementById('event-id-input'),
   eventTitleInput: document.getElementById('event-title-input'),
   eventCategoryInput: document.getElementById('event-category-input'),
@@ -121,6 +122,7 @@ const dom = {
   cancelEventModalBtn: document.getElementById('cancel-event-modal-btn'),
   
   addMemberForm: document.getElementById('add-member-form'),
+  memberModalTitle: document.getElementById('member-modal-title'),
   memberIdInput: document.getElementById('member-id-input'),
   memberNameInput: document.getElementById('member-name-input'),
   memberHebNameInput: document.getElementById('member-heb-name-input'),
@@ -190,76 +192,66 @@ function registerServiceWorker() {
   }
 }
 
-// --- Descarga Muestra de Imágenes a Blobs ---
-async function urlToBlob(url) {
-  try {
-    const response = await fetch(url, { mode: 'cors' });
-    if (!response.ok) throw new Error();
-    return await response.blob();
-  } catch (e) {
-    console.warn('Error al descargar imagen semilla (se usará enlace directo):', url);
-    return null;
-  }
+function isExactDemoSeed(members, events, shorashim) {
+  const fingerprint = typeof DEMO_SEED_FINGERPRINT !== 'undefined' ? DEMO_SEED_FINGERPRINT : null;
+  if (!fingerprint) return false;
+  if (!Array.isArray(members) || !Array.isArray(events)) return false;
+  if (members.length !== fingerprint.members.length) return false;
+  if (events.length !== fingerprint.events.length) return false;
+  const membersMatch = fingerprint.members.every((seedMember) => {
+    const stored = members.find((member) => member.id === seedMember.id);
+    return stored && stored.name === seedMember.name;
+  });
+  if (!membersMatch) return false;
+  const eventsMatch = fingerprint.events.every((seedEvent) => {
+    const stored = events.find((event) => event.id === seedEvent.id);
+    return stored && stored.title === seedEvent.title;
+  });
+  if (!eventsMatch) return false;
+  if (!shorashim) return false;
+  return shorashim.childName === fingerprint.shorashim.childName
+    && shorashim.childNamedAfter === fingerprint.shorashim.childNamedAfter;
 }
 
-// --- Precarga de Datos Muestra ---
+function offerDemoSeedRemoval() {
+  const banner = document.getElementById('seed-data-banner');
+  if (!banner) return;
+  banner.hidden = false;
+
+  const removeBtn = document.getElementById('remove-seed-data-btn');
+  const keepBtn = document.getElementById('keep-seed-data-btn');
+
+  removeBtn?.addEventListener('click', async () => {
+    const confirmed = confirm(
+      'Se quitará únicamente la familia de ejemplo Levy y el relato de Shorashim de muestra (David Levy / Varsovia). Esta acción no se puede deshacer. ¿Quitar los datos de ejemplo?'
+    );
+    if (!confirmed) return;
+    await clearAllData();
+    await saveSetting('seed_removal_declined', 'true');
+    banner.hidden = true;
+    showToast('Datos de ejemplo eliminados');
+    await updateAllViews();
+  }, { once: true });
+
+  keepBtn?.addEventListener('click', async () => {
+    await saveSetting('seed_removal_declined', 'true');
+    banner.hidden = true;
+  }, { once: true });
+}
+
 async function checkAndPreloadSeedData() {
   const members = await getMembers();
+  const events = await getEvents();
+  const shorashim = await getShorashimProject();
   const firstRun = await getSetting('first_run_completed');
-  
-  if (members.length === 0 && !firstRun) {
-    console.log('Precargando base de datos inicial...');
-    
-    // 1. Guardar Miembros
-    for (const m of INITIAL_MEMBERS) {
-      const blob = await urlToBlob(m.imageUrl);
-      await saveMember({
-        id: m.id,
-        name: m.name,
-        hebrewName: m.hebrewName,
-        relationship: m.relationship,
-        birthDate: m.birthDate,
-        hebrewBirthDate: m.hebrewBirthDate,
-        avatar: blob || m.imageUrl
-      });
-    }
 
-    // 2. Guardar Eventos
-    for (const e of INITIAL_EVENTS) {
-      const blob = await urlToBlob(e.imageUrl);
-      const media = blob ? [{ id: 'media-' + Date.now() + Math.random(), type: 'image', blob, name: 'foto.jpg' }] : [];
-      await saveEvent({
-        id: e.id,
-        title: e.title,
-        description: e.description,
-        category: e.category,
-        date: e.date,
-        hebrewDate: e.hebrewDate,
-        location: e.location,
-        taggedMembers: e.taggedMembers,
-        linkedBlessings: e.linkedBlessings,
-        imageUrl: !blob ? e.imageUrl : null,
-        media: media
-      });
-    }
-
-    // 3. Inicializar Proyecto Shorashim
-    const initialShorashim = {
-      childName: 'David Levy',
-      childHebName: 'David ben Moshe (Significa "Amado")',
-      childNamedAfter: 'Fui nombrado en memoria de mi bisabuelo materno, David, quien era un sastre muy bondadoso en Varsovia.',
-      childBio: 'Nací el 18 de junio de 2013 en Buenos Aires. Mis padres me cuentan que hacía mucho frío ese día, pero toda la familia vino a celebrar mi Brit Milá.',
-      parentsStory: 'Mis padres Moisés y Rajel se conocieron en un campamento de juventud judía en las sierras. Se casaron bajo la Jupá el 15 de junio de 2008 en una fiesta hermosa y tradicional.',
-      siblingsInfo: 'Tengo una hermana menor llamada Miriam, nacida en 2016. Es muy alegre y le encanta trenzar la Jalá de Shabat con mamá.',
-      grandparentsStory: 'Mi abuelo Abraham llegó de Europa central siendo niño tras la guerra. Mi abuela Sara nació en una colonia agrícola en Entre Ríos y nos habla de su infancia rural.',
-      traditionsShabat: 'Los viernes por la noche encendemos las velas en familia, cantamos Shalom Aleijem, mi papá nos recita Birkat Cohanim y compartimos la Jalá.',
-      recipes: 'La Jalá dulce que amasa mi mamá y el Kugel de fideos dulce que hace mi abuela Sara en Rosh Hashaná.',
-      objects: 'El candelabro de Shabat de bronce que perteneció a la bisabuela de mi mamá en Polonia, y la copa de Kidush de plata grabada.'
-    };
-    await saveShorashimProject(initialShorashim);
-    
+  if (!firstRun) {
     await saveSetting('first_run_completed', 'true');
-    console.log('Precarga inicial completada con éxito.');
+  }
+
+  const alreadyOffered = await getSetting('seed_removal_declined');
+  if (!alreadyOffered && isExactDemoSeed(members, events, shorashim)) {
+    offerDemoSeedRemoval();
   }
 }
 
@@ -420,7 +412,8 @@ function setupEventListeners() {
     dom.addEventForm.reset();
     dom.eventIdInput.value = '';
     dom.eventHebDateInput.value = '';
-    dom.eventModalTitle.innerText = 'Añadir Recuerdo';
+    if (dom.eventModalTitle) dom.eventModalTitle.innerText = 'Añadir Recuerdo';
+    resetAudioRecorderUI();
     openModal(dom.modalAddEvent);
   });
 
@@ -482,6 +475,16 @@ function setupEventListeners() {
       }
     }
 
+    if (recordedAudioBlob) {
+      existingMedia = existingMedia.filter((item) => item.type !== 'audio');
+      media.push({
+        id: 'media-' + Date.now() + '-audio',
+        type: 'audio',
+        blob: recordedAudioBlob,
+        name: 'historia-oral.webm'
+      });
+    }
+
     const eventData = {
       id,
       title,
@@ -496,6 +499,7 @@ function setupEventListeners() {
     };
 
     await saveEvent(eventData);
+    resetAudioRecorderUI();
     closeModal(dom.modalAddEvent);
     showToast('Acontecimiento guardado');
     await updateAllViews();
@@ -506,7 +510,7 @@ function setupEventListeners() {
     dom.addMemberForm.reset();
     dom.memberIdInput.value = '';
     dom.memberHebBirthInput.value = '';
-    dom.memberModalTitle.innerText = 'Añadir Miembro de la Familia';
+    if (dom.memberModalTitle) dom.memberModalTitle.innerText = 'Añadir Miembro de la Familia';
     openModal(dom.modalAddMember);
   });
 
@@ -755,28 +759,38 @@ function renderTimeline(events, members) {
     const card = document.createElement('article');
     card.className = 'card timeline-card';
 
-    let mediaSrc = PLACEHOLDER_EVENT_IMAGE;
+    const visualMedia = (event.media || []).find((item) => item.type === 'image' || item.type === 'video');
+    const audioMedia = (event.media || []).find((item) => item.type === 'audio' && item.blob instanceof Blob);
+    let mediaSrc = '';
     let isVideo = false;
-    
-    if (event.media && event.media.length > 0) {
-      const firstMedia = event.media[0];
-      if (firstMedia.blob && firstMedia.blob instanceof Blob) {
-        mediaSrc = URL.createObjectURL(firstMedia.blob);
-      }
-      isVideo = firstMedia.type === 'video';
+    let isAudio = false;
+
+    if (visualMedia && visualMedia.blob instanceof Blob) {
+      mediaSrc = URL.createObjectURL(visualMedia.blob);
+      isVideo = visualMedia.type === 'video';
     } else if (event.imageUrl) {
-      mediaSrc = sanitizeUrl(event.imageUrl, PLACEHOLDER_EVENT_IMAGE);
+      mediaSrc = sanitizeUrl(event.imageUrl, '');
+    } else if (audioMedia) {
+      mediaSrc = URL.createObjectURL(audioMedia.blob);
+      isAudio = true;
     }
 
     const safeMediaSrc = escapeHtml(mediaSrc);
-    const mediaHtml = isVideo
+    const mediaHtml = isAudio
+      ? `<div class="timeline-card-media timeline-card-media-audio">
+          <i class="fa-solid fa-microphone"></i>
+          <audio src="${safeMediaSrc}" controls></audio>
+         </div>`
+      : isVideo
       ? `<div class="timeline-card-media">
           <video src="${safeMediaSrc}"></video>
           <div class="media-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
          </div>`
-      : `<div class="timeline-card-media">
+      : mediaSrc
+      ? `<div class="timeline-card-media">
           <img src="${safeMediaSrc}" alt="${escapeHtml(event.title)}" loading="lazy">
-         </div>`;
+         </div>`
+      : '';
 
     let taggedHtml = '';
     if (event.taggedMembers && event.taggedMembers.length > 0) {
@@ -835,9 +849,11 @@ function renderTimeline(events, members) {
     `;
 
     const mediaContainer = card.querySelector('.timeline-card-media');
-    mediaContainer.addEventListener('click', () => {
-      openSlideshowFromEvent(event);
-    });
+    if (mediaContainer && !isAudio) {
+      mediaContainer.addEventListener('click', () => {
+        openSlideshowFromEvent(event);
+      });
+    }
 
     card.querySelector('.edit-event-btn').addEventListener('click', (e) => {
       e.stopPropagation();
@@ -927,7 +943,12 @@ function openEditEventModal(event) {
     cb.checked = event.taggedMembers && event.taggedMembers.includes(cb.value);
   });
 
-  dom.eventModalTitle.innerText = 'Editar Recuerdo';
+  if (dom.eventModalTitle) dom.eventModalTitle.innerText = 'Editar Recuerdo';
+  resetAudioRecorderUI();
+  const existingAudio = (event.media || []).find((item) => item.type === 'audio' && item.blob instanceof Blob);
+  if (existingAudio) {
+    showExistingAudioPreview(existingAudio.blob);
+  }
   openModal(dom.modalAddEvent);
 }
 
@@ -970,6 +991,12 @@ function renderGallery(events) {
              <div class="gallery-overlay">
                <h4>${escapeHtml(event.title)}</h4>
                <span><i class="fa-solid fa-circle-play"></i> Video</span>
+             </div>`
+          : item.type === 'audio'
+          ? `<div class="gallery-audio-tile"><i class="fa-solid fa-microphone"></i></div>
+             <div class="gallery-overlay">
+               <h4>${escapeHtml(event.title)}</h4>
+               <span><i class="fa-solid fa-microphone"></i> Historia oral</span>
              </div>`
           : `<img src="${escapeHtml(mediaSrc)}" alt="${escapeHtml(event.title)}" loading="lazy">
              <div class="gallery-overlay">
@@ -1114,7 +1141,7 @@ function openEditMemberModal(m) {
   dom.memberHebBirthInput.value = m.hebrewBirthDate || '';
   dom.memberPhotoInput.value = '';
 
-  dom.memberModalTitle.innerText = 'Editar Familiar';
+  if (dom.memberModalTitle) dom.memberModalTitle.innerText = 'Editar Familiar';
   openModal(dom.modalAddMember);
 }
 
@@ -1359,7 +1386,7 @@ function renderReminders(members, events) {
 }
 
 function openSlideshowFromEvent(event) {
-  const firstMedia = event.media && event.media[0];
+  const firstMedia = (event.media || []).find((item) => item.type === 'image' || item.type === 'video' || item.type === 'audio');
   let searchUrl = '';
 
   if (firstMedia && firstMedia.blob) {
@@ -1399,6 +1426,13 @@ function renderSlideshowContent() {
     video.autoplay = true;
     video.className = 'slideshow-media';
     dom.slideshowMediaContainer.appendChild(video);
+  } else if (item.type === 'audio') {
+    const audio = document.createElement('audio');
+    audio.src = safeSrc;
+    audio.controls = true;
+    audio.autoplay = true;
+    audio.className = 'slideshow-media';
+    dom.slideshowMediaContainer.appendChild(audio);
   } else {
     const img = document.createElement('img');
     img.src = safeSrc;
@@ -1467,13 +1501,47 @@ let audioChunks = [];
 let audioTimerInterval = null;
 let recordedAudioBlob = null;
 
+function getAudioRecorderEls() {
+  return {
+    recordBtn: document.getElementById('event-record-audio-btn'),
+    stopBtn: document.getElementById('event-stop-audio-btn'),
+    timerSpan: document.getElementById('event-audio-timer'),
+    statusSpan: document.getElementById('event-audio-status'),
+    playerContainer: document.getElementById('event-audio-preview-container'),
+    audioPlayer: document.getElementById('event-audio-player')
+  };
+}
+
+function resetAudioRecorderUI() {
+  recordedAudioBlob = null;
+  audioChunks = [];
+  clearInterval(audioTimerInterval);
+  const { recordBtn, stopBtn, timerSpan, statusSpan, playerContainer, audioPlayer } = getAudioRecorderEls();
+  if (recordBtn) {
+    recordBtn.disabled = false;
+    recordBtn.classList.remove('recording-active');
+  }
+  if (stopBtn) stopBtn.disabled = true;
+  if (timerSpan) timerSpan.innerText = '00:00';
+  if (statusSpan) statusSpan.innerText = '';
+  if (audioPlayer) {
+    audioPlayer.pause();
+    audioPlayer.removeAttribute('src');
+    audioPlayer.load();
+  }
+  if (playerContainer) playerContainer.style.display = 'none';
+}
+
+function showExistingAudioPreview(blob) {
+  const { playerContainer, audioPlayer, statusSpan } = getAudioRecorderEls();
+  if (!blob || !audioPlayer) return;
+  audioPlayer.src = URL.createObjectURL(blob);
+  if (playerContainer) playerContainer.style.display = 'block';
+  if (statusSpan) statusSpan.innerText = 'Historia oral ya guardada. Grabe de nuevo para reemplazarla.';
+}
+
 function setupAudioRecorder() {
-  const recordBtn = document.getElementById('event-record-audio-btn');
-  const stopBtn = document.getElementById('event-stop-audio-btn');
-  const timerSpan = document.getElementById('event-audio-timer');
-  const statusSpan = document.getElementById('event-audio-status');
-  const playerContainer = document.getElementById('event-audio-preview-container');
-  const audioPlayer = document.getElementById('event-audio-player');
+  const { recordBtn, stopBtn, timerSpan, statusSpan, playerContainer, audioPlayer } = getAudioRecorderEls();
 
   if (!recordBtn || !stopBtn) return;
 
@@ -1488,7 +1556,7 @@ function setupAudioRecorder() {
       };
 
       mediaRecorder.onstop = () => {
-        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        recordedAudioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
         const audioUrl = URL.createObjectURL(recordedAudioBlob);
         audioPlayer.src = audioUrl;
         playerContainer.style.display = 'block';
@@ -1496,7 +1564,7 @@ function setupAudioRecorder() {
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(1000);
       recordBtn.disabled = true;
       recordBtn.classList.add('recording-active');
       stopBtn.disabled = false;
@@ -1556,84 +1624,83 @@ let leafletMap = null;
 
 function renderMigrationMap() {
   const mapContainer = document.getElementById('migration-map');
-  if (!mapContainer || typeof L === 'undefined') return;
+  if (!mapContainer) return;
 
   if (leafletMap) {
     leafletMap.remove();
     leafletMap = null;
   }
 
-  leafletMap = L.map('migration-map').setView([30.0, 10.0], 2);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(leafletMap);
-
-  const migrationPoints = [
-    { name: 'Varsovia, Polonia', lat: 52.2297, lng: 21.0122, desc: 'Origen de los bisabuelos paternos (década de 1920)' },
-    { name: 'Casablanca, Marruecos', lat: 33.5731, lng: -7.5898, desc: 'Comunidad de origen de los antepasados maternos' },
-    { name: 'Entre Ríos, Argentina', lat: -31.7413, lng: -60.5115, desc: 'Colonia agrícola judía (Llegada a Sudamérica)' },
-    { name: 'Buenos Aires, Argentina', lat: -34.6037, lng: -58.3816, desc: 'Establecimiento del núcleo familiar actual' },
-    { name: 'Jerusalén, Israel', lat: 31.7683, lng: 35.2137, desc: 'Aliyá de familiares y ceremonias en la ciudad sagrada' }
-  ];
-
-  const latLngs = [];
-  migrationPoints.forEach(pt => {
-    const marker = L.marker([pt.lat, pt.lng]).addTo(leafletMap);
-    marker.bindPopup(`<b>${pt.name}</b><br><span style="font-size: 0.85rem; color: #475569;">${pt.desc}</span>`);
-    latLngs.push([pt.lat, pt.lng]);
-  });
-
-  if (latLngs.length > 1) {
-    L.polyline(latLngs, { color: '#D97706', weight: 3, dashArray: '6, 10' }).addTo(leafletMap);
-  }
+  mapContainer.replaceChildren();
+  const empty = document.createElement('div');
+  empty.className = 'empty-migration-map';
+  empty.innerHTML = '<p>No hay rutas de migración registradas. El mapa permanece vacío hasta que se documenten lugares reales de la familia.</p>';
+  mapContainer.appendChild(empty);
 }
 
 // 5. Árbol Genealógico Interactivo D3.js SVG
-function renderD3Tree(members) {
-  const svgEl = d3.select('#d3-tree-svg');
-  if (svgEl.empty() || typeof d3 === 'undefined') return;
+function buildFamilyTreeData(members) {
+  const unused = [...members];
+  const take = (predicate) => {
+    const matched = [];
+    for (let i = unused.length - 1; i >= 0; i--) {
+      if (predicate(unused[i])) matched.unshift(unused.splice(i, 1)[0]);
+    }
+    return matched;
+  };
+  const toNode = (member) => ({
+    name: member.name,
+    hebrewName: member.hebrewName || '',
+    relationship: member.relationship || '',
+    children: []
+  });
+  const generation = (label, people) => {
+    if (!people.length) return [];
+    return [{
+      name: label,
+      relationship: '',
+      hebrewName: '',
+      children: people.map(toNode)
+    }];
+  };
 
+  const grandparents = take((m) => /abuel/i.test(m.relationship || ''));
+  const parents = take((m) => /padre|madre|t[ií]o/i.test(m.relationship || ''));
+  const children = take((m) => /hijo|hija|prim/i.test(m.relationship || ''));
+
+  return {
+    name: 'Familia',
+    relationship: '',
+    hebrewName: '',
+    children: [
+      ...generation('Abuelos', grandparents),
+      ...generation('Padres', parents),
+      ...generation('Hijos', children),
+      ...generation('Otros', unused)
+    ]
+  };
+}
+
+function renderD3Tree(members) {
+  const svgNode = document.getElementById('d3-tree-svg');
+  const emptyEl = document.getElementById('d3-tree-empty');
+  if (!svgNode || typeof d3 === 'undefined') return;
+
+  const svgEl = d3.select('#d3-tree-svg');
   svgEl.selectAll('*').remove();
+
+  if (!members || members.length === 0) {
+    svgNode.style.display = 'none';
+    if (emptyEl) emptyEl.hidden = false;
+    return;
+  }
+
+  svgNode.style.display = 'block';
+  if (emptyEl) emptyEl.hidden = true;
 
   const width = svgEl.node().clientWidth || 800;
   const height = 520;
-
-  const rootData = {
-    name: 'Familia Levy',
-    relationship: 'Familia',
-    children: [
-      {
-        name: 'Abraham Levy',
-        hebrewName: 'Avraham ben Moshe',
-        relationship: 'Abuelo',
-        children: [
-          {
-            name: 'Moisés Levy',
-            hebrewName: 'Moshe ben Avraham',
-            relationship: 'Padre',
-            children: [
-              { name: 'David Levy', hebrewName: 'David ben Moshe', relationship: 'Hijo' },
-              { name: 'Miriam Levy', hebrewName: 'Miriam bat Moshe', relationship: 'Hija' }
-            ]
-          }
-        ]
-      },
-      {
-        name: 'Sara Stern',
-        hebrewName: 'Sara bat Yitzchak',
-        relationship: 'Abuela',
-        children: [
-          {
-            name: 'Rajel Stern',
-            hebrewName: 'Rajel bat Yitzchak',
-            relationship: 'Madre'
-          }
-        ]
-      }
-    ]
-  };
-
+  const rootData = buildFamilyTreeData(members);
   const hierarchyRoot = d3.hierarchy(rootData);
   const treeLayout = d3.tree().size([width - 120, height - 140]);
   treeLayout(hierarchyRoot);
@@ -1727,7 +1794,24 @@ function setupPhotoTagging(members) {
   });
 }
 
-// 7. Zmanim & Calendario Exportación .ics
+function formatHebcalClock(isoLike) {
+  if (typeof isoLike !== 'string' || isoLike.length < 16) return 'no disponible';
+  const clock = isoLike.slice(11, 16);
+  return /^\d{2}:\d{2}$/.test(clock) ? clock : 'no disponible';
+}
+
+function renderZmanimUnavailable(zmanimDisplay, locationText, message) {
+  if (locationText) locationText.innerText = message;
+  zmanimDisplay.innerHTML = `
+    <div class="zmanim-chip">🕯️ <strong>Encendido:</strong> no disponible</div>
+    <div class="zmanim-chip">✨ <strong>Havdalá:</strong> no disponible</div>
+    <button type="button" class="btn btn-secondary btn-sm" id="retry-zmanim-btn">Reintentar</button>
+  `;
+  document.getElementById('retry-zmanim-btn')?.addEventListener('click', () => {
+    fetchHebcalZmanim();
+  });
+}
+
 async function fetchHebcalZmanim() {
   const zmanimDisplay = document.getElementById('zmanim-times-display');
   const locationText = document.getElementById('zmanim-location-text');
@@ -1737,22 +1821,26 @@ async function fetchHebcalZmanim() {
     const response = await fetch('https://www.hebcal.com/zmanim?cfg=json&city=BU&g2h=1');
     if (!response.ok) throw new Error();
     const data = await response.json();
+    const candles = formatHebcalClock(data && data.times ? data.times.candles : null);
+    const havdalah = formatHebcalClock(data && data.times ? data.times.havdalah : null);
+    const unavailable = candles === 'no disponible' || havdalah === 'no disponible';
 
-    locationText.innerText = 'Buenos Aires, Argentina (Hebcal Zmanim)';
-    if (data.times) {
-      const candles = data.times.candles ? data.times.candles.slice(11, 16) : '18:15';
-      const havdalah = data.times.havdalah ? data.times.havdalah.slice(11, 16) : '19:10';
-      zmanimDisplay.innerHTML = `
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Encendido:</strong> ${escapeHtml(candles)}</div>
-        <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> ${escapeHtml(havdalah)}</div>
-      `;
+    if (candles === 'no disponible' && havdalah === 'no disponible') {
+      renderZmanimUnavailable(zmanimDisplay, locationText, 'Horarios de Shabat no disponible');
+      return;
     }
-  } catch (e) {
-    locationText.innerText = 'Horarios de Shabat estimados';
+
+    if (locationText) locationText.innerText = 'Buenos Aires, Argentina (Hebcal Zmanim)';
     zmanimDisplay.innerHTML = `
-      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">🕯️ <strong>Velas:</strong> 18:15</div>
-      <div style="background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 6px;">✨ <strong>Havdalá:</strong> 19:10</div>
+      <div class="zmanim-chip">🕯️ <strong>Encendido:</strong> ${escapeHtml(candles)}</div>
+      <div class="zmanim-chip">✨ <strong>Havdalá:</strong> ${escapeHtml(havdalah)}</div>
+      ${unavailable ? '<button type="button" class="btn btn-secondary btn-sm" id="retry-zmanim-btn">Reintentar</button>' : ''}
     `;
+    document.getElementById('retry-zmanim-btn')?.addEventListener('click', () => {
+      fetchHebcalZmanim();
+    });
+  } catch (e) {
+    renderZmanimUnavailable(zmanimDisplay, locationText, 'Horarios de Shabat no disponible');
   }
 }
 
